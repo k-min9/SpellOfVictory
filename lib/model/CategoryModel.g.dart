@@ -1,29 +1,29 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'Category.dart';
+part of 'CategoryModel.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class CategoryAdapter extends TypeAdapter<Category> {
+class CategoryModelAdapter extends TypeAdapter<CategoryModel> {
   @override
   final int typeId = 0;
 
   @override
-  Category read(BinaryReader reader) {
+  CategoryModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Category(
+    return CategoryModel(
       name: fields[0] as String,
-      texts: (fields[1] as List).cast<Text>(),
+      texts: (fields[1] as List).cast<TextModel>(),
     );
   }
 
   @override
-  void write(BinaryWriter writer, Category obj) {
+  void write(BinaryWriter writer, CategoryModel obj) {
     writer
       ..writeByte(2)
       ..writeByte(0)
@@ -38,28 +38,28 @@ class CategoryAdapter extends TypeAdapter<Category> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is CategoryAdapter &&
+      other is CategoryModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
 
-class TextAdapter extends TypeAdapter<Text> {
+class TextModelAdapter extends TypeAdapter<TextModel> {
   @override
   final int typeId = 1;
 
   @override
-  Text read(BinaryReader reader) {
+  TextModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Text(
+    return TextModel(
       content: fields[0] as String,
     );
   }
 
   @override
-  void write(BinaryWriter writer, Text obj) {
+  void write(BinaryWriter writer, TextModel obj) {
     writer
       ..writeByte(1)
       ..writeByte(0)
@@ -72,7 +72,7 @@ class TextAdapter extends TypeAdapter<Text> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is TextAdapter &&
+      other is TextModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
