@@ -1,5 +1,8 @@
 import 'package:hive/hive.dart';
 
+part 'Category.g.dart';
+// flutter pub run build_runner build
+
 @HiveType(typeId: 0)
 class Category extends HiveObject {
   @HiveField(0)
