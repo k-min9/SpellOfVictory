@@ -9,15 +9,21 @@ class CategoryModel extends HiveObject {
   String name;
 
   @HiveField(1)
-  List<TextModel> texts;
+  List<CategoryTextModel> texts;
 
-  CategoryModel({required this.name, required this.texts});
+  @HiveField(2)
+  bool isSelected;
+
+  CategoryModel({required this.name, required this.texts, required this.isSelected});
 }
 
-@HiveType(typeId: 1)
-class TextModel extends HiveObject {
+@HiveType(typeId: 2)
+class CategoryTextModel extends HiveObject {
   @HiveField(0)
   String content;
 
-  TextModel({required this.content});
+  @HiveField(1)
+  bool isContentSelected;
+
+  CategoryTextModel({required this.content, required this.isContentSelected});
 }

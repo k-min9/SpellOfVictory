@@ -18,18 +18,21 @@ class CategoryModelAdapter extends TypeAdapter<CategoryModel> {
     };
     return CategoryModel(
       name: fields[0] as String,
-      texts: (fields[1] as List).cast<TextModel>(),
+      texts: (fields[1] as List).cast<CategoryTextModel>(),
+      isSelected: fields[2] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, CategoryModel obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
-      ..write(obj.texts);
+      ..write(obj.texts)
+      ..writeByte(2)
+      ..write(obj.isSelected);
   }
 
   @override
@@ -43,27 +46,30 @@ class CategoryModelAdapter extends TypeAdapter<CategoryModel> {
           typeId == other.typeId;
 }
 
-class TextModelAdapter extends TypeAdapter<TextModel> {
+class CategoryTextModelAdapter extends TypeAdapter<CategoryTextModel> {
   @override
-  final int typeId = 1;
+  final int typeId = 2;
 
   @override
-  TextModel read(BinaryReader reader) {
+  CategoryTextModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return TextModel(
+    return CategoryTextModel(
       content: fields[0] as String,
+      isContentSelected: fields[1] as bool,
     );
   }
 
   @override
-  void write(BinaryWriter writer, TextModel obj) {
+  void write(BinaryWriter writer, CategoryTextModel obj) {
     writer
-      ..writeByte(1)
+      ..writeByte(2)
       ..writeByte(0)
-      ..write(obj.content);
+      ..write(obj.content)
+      ..writeByte(1)
+      ..write(obj.isContentSelected);
   }
 
   @override
@@ -72,7 +78,7 @@ class TextModelAdapter extends TypeAdapter<TextModel> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is TextModelAdapter &&
+      other is CategoryTextModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
