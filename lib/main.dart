@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:spell_of_victory/model/CategoryModel.dart';
 import 'package:spell_of_victory/model/HiveBoxes.dart';
+import 'package:spell_of_victory/model/SettingModel.dart';
 import 'package:spell_of_victory/page/HomePage.dart';
 import 'package:spell_of_victory/page/RegisterPage.dart';
 import 'package:spell_of_victory/page/SettingPage.dart';
+import 'package:get/get.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,6 +15,26 @@ void main() async {
   // hive 초기화
   await Hive.initFlutter();
   await HiveBoxes.init();
+
+  // FlutterTTS 인스턴스 생성 및 등록
+  final FlutterTts flutterTts = FlutterTts();
+  Get.put(flutterTts);
+
+  // 기본 데이터 세팅 없으면 세팅
+  if (Hive.box<SettingModel>('settings').isEmpty) {
+    await Hive.box<SettingModel>('settings').add(
+      SettingModel(
+        isFirstVisit: true,
+        isTutorialNeeded: true,
+        ttsEngine: '',
+        ttsLanguage: 'en-US',
+        ttsVoiceType: 0,
+        ttsVolume: 0.5,
+        ttsPitch: 1.0,
+        ttsRate: 0.5,
+      ),
+    );
+  }
 
   runApp(const MyApp());
 }
