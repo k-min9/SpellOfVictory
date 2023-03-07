@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:spell_of_victory/model/CategoryModel.dart';
 import 'package:spell_of_victory/model/ChoiceModel.dart';
 import 'package:get/get.dart';
 import 'package:spell_of_victory/model/HiveBoxes.dart';
@@ -41,7 +40,15 @@ class _RegisterPageState extends State<RegisterPage> {
                       return Column(
                         children: [
                           ExpansionTile(
-                              title: Text(choice.name, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                              title: Row(
+                                children: [
+                                  Expanded(child: Text(choice.name, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))),
+                                  SizedBox(width: 3),
+                                  IconButton(onPressed: () {
+                                    box.deleteAt(index);
+                                  }, icon: Icon(Icons.delete), splashRadius: 18)
+                                ],
+                              ),
                               children: [
                                 ...choice.texts.map((text) => Column(
                                   children: [
@@ -80,6 +87,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                         final textContent = _textEditingController.text;
                                         final newText = ChoiceTextModel(content: textContent, isChoiceSelected: false);
                                         choice.texts.add(newText);
+                                        box.putAt(index, choice);
                                         _textEditingController.clear();
                                       },
                                     ),
@@ -97,55 +105,52 @@ class _RegisterPageState extends State<RegisterPage> {
 
             ),
             SizedBox(height: 10),
-          ],
-        ),
-        Positioned(
-          bottom: 10,
-          right: 10,
-          child: GestureDetector(
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: Text("새로운 선택지"),
-                    content: TextField(
-                      controller: _textEditingController,
-                      decoration: InputDecoration(
-                        hintText: '선택지 이름을 적어주세요.',
-                        contentPadding: EdgeInsets.all(10),
+            GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: Text("새로운 선택지"),
+                      content: TextField(
+                        controller: _textEditingController,
+                        decoration: InputDecoration(
+                          hintText: '선택지 이름을 적어주세요.',
+                          contentPadding: EdgeInsets.all(10),
+                        ),
                       ),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          final newChoice = ChoiceModel(name: _textEditingController.text, texts: [], isSelected: false);
-                          HiveBoxes.choices.add(newChoice);
-                          Navigator.pop(context);
-                        },
-                        child: Text('OK'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-            child: Container(
-              padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: Colors.grey[200],
-              ),
-              child: Text(
-                '새로운 카테고리',
-                style: TextStyle(fontSize: 16),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            final newChoice = ChoiceModel(name: _textEditingController.text, texts: [], isSelected: false);
+                            HiveBoxes.choices.add(newChoice);
+                            Navigator.pop(context);
+                          },
+                          child: Text('OK'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: Container(
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.grey[200],
+                ),
+                child: Text(
+                  '새로운 카테고리',
+                  style: TextStyle(fontSize: 16),
+                ),
               ),
             ),
-          ),
+            SizedBox(height: 10),
+          ],
         ),
       ],
     );
