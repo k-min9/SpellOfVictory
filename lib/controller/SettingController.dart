@@ -1,9 +1,12 @@
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:spell_of_victory/model/SettingModel.dart';
 
 class SettingController extends GetxController {
   late Box<SettingModel> _settingsBox;
+  final FlutterTts _flutterTts = Get.find<FlutterTts>();
+
 
   @override
   void onInit() {
@@ -63,6 +66,10 @@ class SettingController extends GetxController {
       ttsPitch: pitch ?? settings.value.ttsPitch,
       ttsRate: rate ?? settings.value.ttsRate,
     );
+    _flutterTts.setLanguage(updatedSettings.ttsLanguage);
+    _flutterTts.setVolume(updatedSettings.ttsVolume);
+    _flutterTts.setPitch(updatedSettings.ttsPitch);
+    _flutterTts.setSpeechRate(updatedSettings.ttsRate);
     _settingsBox.put(0, updatedSettings);
     settings.value = updatedSettings;
   }

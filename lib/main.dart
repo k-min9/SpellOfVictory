@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:spell_of_victory/model/CategoryModel.dart';
+import 'package:spell_of_victory/controller/SettingController.dart';
 import 'package:spell_of_victory/model/HiveBoxes.dart';
 import 'package:spell_of_victory/model/SettingModel.dart';
 import 'package:spell_of_victory/page/HomePage.dart';
@@ -19,6 +19,9 @@ void main() async {
   // FlutterTTS 인스턴스 생성 및 등록
   final FlutterTts flutterTts = FlutterTts();
   Get.put(flutterTts);
+  
+  // SettingController 등록
+  Get.put(SettingController());
 
   // 기본 데이터 세팅 없으면 세팅
   if (Hive.box<SettingModel>('settings').isEmpty) {
