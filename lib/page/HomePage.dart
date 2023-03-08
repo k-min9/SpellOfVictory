@@ -15,9 +15,69 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
+enum TtsState { playing, stopped, paused, continued }
+
 class _HomePageState extends State<HomePage> {
   final TextEditingController _textEditingController = TextEditingController();
-  final FlutterTts flutterTts = Get.find();
+
+  // TTS 관련
+  late FlutterTts flutterTts;
+  TtsState ttsState = TtsState.stopped;
+
+  @override
+  void initState() {
+    super.initState();
+    flutterTts = Get.find();
+    // await flutterTts.awaitSpeakCompletion(true);
+
+    // 시작시
+    flutterTts.setStartHandler(() {
+      setState(() {
+        print("Playing");
+        ttsState = TtsState.playing;
+      });
+    });
+
+    flutterTts.setCompletionHandler(() {
+      if (ttsState == TtsState.playing) {
+        _speak();
+      } else {
+        setState(() {
+          print("Complete");
+          ttsState = TtsState.stopped;
+        });
+      }
+    });
+
+    flutterTts.setCancelHandler(() {
+      setState(() {
+        print("Cancel");
+        ttsState = TtsState.stopped;
+      });
+    });
+
+    flutterTts.setPauseHandler(() {
+      setState(() {
+        print("Paused");
+        ttsState = TtsState.paused;
+      });
+    });
+
+    flutterTts.setContinueHandler(() {
+      setState(() {
+        print("Continued");
+        ttsState = TtsState.continued;
+      });
+    });
+
+    flutterTts.setErrorHandler((msg) {
+      setState(() {
+        print("error: $msg");
+        ttsState = TtsState.stopped;
+      });
+    });
+  }
+
 
   @override
   void dispose() {
@@ -74,6 +134,8 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SizedBox(height: 10),
+            _btnSection(),
+            SizedBox(height: 10),
             GestureDetector(
               onTap: () {
                 showDialog(
@@ -123,6 +185,65 @@ class _HomePageState extends State<HomePage> {
         )
       ],
     );
+  }
+
+  // 재생기(임시)
+  Widget _btnSection() {
+    return Container(
+      padding: EdgeInsets.only(top: 50.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildButtonColumn(Colors.green, Colors.greenAccent, Icons.play_arrow,
+              'PLAY', _speak),
+          _buildButtonColumn(
+              Colors.red, Colors.redAccent, Icons.stop, 'STOP', _stop),
+          _buildButtonColumn(
+              Colors.blue, Colors.blueAccent, Icons.pause, 'PAUSE', _pause),
+        ],
+      ),
+    );
+  }
+
+  Column _buildButtonColumn(Color color, Color splashColor, IconData icon,
+      String label, Function func) {
+    return Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+              icon: Icon(icon),
+              color: color,
+              splashColor: splashColor,
+              onPressed: () => func()),
+          Container(
+              margin: const EdgeInsets.only(top: 8.0),
+              child: Text(label,
+                  style: TextStyle(
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w400,
+                      color: color)))
+        ]);
+  }
+
+  Future _speak() async {
+    String text = "안녕하십니까. TTS 테스트 중입니다.";
+    var result = await flutterTts.speak(text);
+    print("_speak result : " + result.toString());
+  }
+
+  // Future _setAwaitOptions() async {
+  //   await flutterTts.awaitSpeakCompletion(true);
+  // }
+
+  Future _stop() async {
+    var result = await flutterTts.stop();
+    if (result == 1) setState(() => ttsState = TtsState.stopped);
+  }
+
+  Future _pause() async {
+    var result = await flutterTts.pause();
+    if (result == 1) setState(() => ttsState = TtsState.paused);
   }
 
   // 카테고리 내용 추가
