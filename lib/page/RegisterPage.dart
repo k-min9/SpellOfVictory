@@ -42,6 +42,9 @@ class _RegisterPageState extends State<RegisterPage> {
                           ExpansionTile(
                               title: Row(
                                 children: [
+                                  SizedBox(width: 1),
+                                  Icon(Icons.circle, size: 8),
+                                  SizedBox(width: 12),
                                   Expanded(child: Text(choice.name, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))),
                                   SizedBox(width: 3),
                                   IconButton(onPressed: () {
