@@ -39,7 +39,7 @@ class _HomePageState extends State<HomePage> {
     });
 
     flutterTts.setCompletionHandler(() {
-      if (ttsState == TtsState.playing) {
+      if (ttsState == TtsState.playing || ttsState == TtsState.continued) {
         _speak();
       } else {
         setState(() {
@@ -194,8 +194,8 @@ class _HomePageState extends State<HomePage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildButtonColumn(Colors.green, Colors.greenAccent, Icons.play_arrow,
-              'PLAY', _speak),
+          _buildButtonColumn(
+              Colors.green, Colors.greenAccent, Icons.play_arrow, 'PLAY', _speak),
           _buildButtonColumn(
               Colors.red, Colors.redAccent, Icons.stop, 'STOP', _stop),
           _buildButtonColumn(
@@ -228,6 +228,7 @@ class _HomePageState extends State<HomePage> {
 
   Future _speak() async {
     String text = "안녕하십니까. TTS 테스트 중입니다.";
+    await Future.delayed(Duration(seconds: 1)); // 1초 대기(Test)
     var result = await flutterTts.speak(text);
     print("_speak result : " + result.toString());
   }
