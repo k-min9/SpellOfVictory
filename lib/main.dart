@@ -16,7 +16,7 @@ void main() async {
   await Hive.initFlutter();
   await HiveBoxes.init();
 
-  // FlutterTTS 인스턴스 생성 및 등록
+  // FlutterTTS 인스턴스 생성 후 초기화 및 등록
   final FlutterTts flutterTts = FlutterTts();
   Get.put(flutterTts);
   
