@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -293,17 +294,62 @@ class _HomePageState extends State<HomePage> {
   void _showMultipleModal(BuildContext context) {
     showCupertinoModalBottomSheet(
       context: context,
-      builder: (context) {
+      expand: true,
+      // isDismissible: false, // 외부 Modal이 닫히지 않도록 설정
+      builder: (BuildContext context) {
         return Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: HiveBoxes.choices.values.map((choice) {
-            return _buildModal(context, choice.name, choice.texts);
+            return _buildChoiceTitleModal(context, choice.name, choice.texts);
           }).toList(),
         );
       },
     );
   }
+
+  Widget _buildChoiceTitleModal(BuildContext context, String name, List<ChoiceTextModel> texts) {
+    return Material(
+        child: CupertinoPageScaffold(
+          // navigationBar: CupertinoNavigationBar(
+          //     leading: Container(), middle: Text('Modal Page')),
+          child: SafeArea(
+            bottom: false,
+            child: ListTile(
+              title: Text(name),
+              onTap: () => showCupertinoModalBottomSheet(
+                context: context,
+                builder: (context) => _buildChoiceTextModal(context, texts),
+                backgroundColor: Colors.transparent,
+                // isDismissible: false,
+                expand: true,
+              ),
+            )
+          ),
+        ));
+  }
+
+  Widget _buildChoiceTextModal(BuildContext context, List<ChoiceTextModel> texts) {
+    return Material(
+      child: CupertinoPageScaffold(
+          child: SafeArea(
+              child: Column(
+                  children: [ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: texts.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(texts[index].content),
+                      );
+                    },
+                  ),
+                  ]
+              )
+          )
+      )
+    );
+  }
+
 
   Widget _buildModal(BuildContext context, String title, List<ChoiceTextModel> texts) {
     return Column(
@@ -324,8 +370,8 @@ class _HomePageState extends State<HomePage> {
           itemBuilder: (context, index) {
             return ListTile(
               title: Text(texts[index].content),
-              onTap: () => _showMultipleModal(context),
-              // onTap: () => _handleItemClick(title, texts[index].content),
+              // onTap: () => _showMultipleModal(context),
+              onTap: () => _handleItemClick(title, texts[index].content),
             );
           },
         ),
