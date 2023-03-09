@@ -114,12 +114,12 @@ class _HomePageState extends State<HomePage> {
                             IconButton
                               (onPressed: () {
                               _showModal(context);
-                              }, icon: Icon(Icons.add), splashRadius: 18),
+                            }, icon: Icon(Icons.add), splashRadius: 18),
                             SizedBox(width: 3),
                             IconButton(
                                 onPressed: () {
-                              categoriesBox.deleteAt(index);
-                              }, icon: Icon(Icons.delete), splashRadius: 18)
+                                  categoriesBox.deleteAt(index);
+                                }, icon: Icon(Icons.delete), splashRadius: 18)
                           ],
                         ),
                         children: category.texts
@@ -297,12 +297,19 @@ class _HomePageState extends State<HomePage> {
       expand: true,
       // isDismissible: false, // 외부 Modal이 닫히지 않도록 설정
       builder: (BuildContext context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: HiveBoxes.choices.values.map((choice) {
-            return _buildChoiceTitleModal(context, choice.name, choice.texts);
-          }).toList(),
+        return CupertinoPageScaffold(
+            navigationBar: CupertinoNavigationBar(
+                leading: Container(), middle: Text('Modal Page')),
+            child: SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final choice in HiveBoxes.choices.values)
+                    _buildChoiceTitleModal(context, choice.name, choice.texts),
+                ],
+              ),
+            )
         );
       },
     );
@@ -310,43 +317,49 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildChoiceTitleModal(BuildContext context, String name, List<ChoiceTextModel> texts) {
     return Material(
-        child: CupertinoPageScaffold(
-          // navigationBar: CupertinoNavigationBar(
-          //     leading: Container(), middle: Text('Modal Page')),
-          child: SafeArea(
-            bottom: false,
-            child: ListTile(
-              title: Text(name),
-              onTap: () => showCupertinoModalBottomSheet(
-                context: context,
-                builder: (context) => _buildChoiceTextModal(context, texts),
-                backgroundColor: Colors.transparent,
-                // isDismissible: false,
-                expand: true,
+        child: Column(
+            children: [
+              ListTile(
+                title: Text(name),
+                onTap: () => showCupertinoModalBottomSheet(
+                  context: context,
+                  builder: (context) => _buildChoiceTextModal(context, texts),
+                  backgroundColor: Colors.transparent,
+                  // isDismissible: false,
+                  expand: true,
+                ),
               ),
-            )
-          ),
-        ));
+              Divider(height: 2, thickness: 1.4),
+            ]
+        )
+    );
   }
 
   Widget _buildChoiceTextModal(BuildContext context, List<ChoiceTextModel> texts) {
     return Material(
-      child: CupertinoPageScaffold(
-          child: SafeArea(
-              child: Column(
-                  children: [ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: texts.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(texts[index].content),
-                      );
-                    },
-                  ),
-                  ]
-              )
-          )
-      )
+        child: CupertinoPageScaffold(
+            navigationBar: CupertinoNavigationBar(
+                leading: Container(), middle: Text('Modal Page')),
+            child: SafeArea(
+                child: Column(
+                    children: [ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: texts.length,
+                      itemBuilder: (context, index) {
+                        return Column(
+                          children: [
+                            ListTile(
+                              title: Text(texts[index].content),
+                            ),
+                            Divider(height: 2, thickness: 1.4),
+                          ],
+                        );
+                      },
+                    ),
+                    ]
+                )
+            )
+        )
     );
   }
 
