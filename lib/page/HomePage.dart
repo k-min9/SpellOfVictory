@@ -24,6 +24,16 @@ class _HomePageState extends State<HomePage> {
   // TTS 관련
   late FlutterTts flutterTts;
   TtsState ttsState = TtsState.stopped;
+  late List<CategoryTextModel> ttsPlayList = [];
+  int ttsPlayIndex = 0;
+  double ttsWaitingTime = 0;
+
+  void setTtsPlayList(CategoryModel category) {
+    ttsPlayList = category.texts;
+    ttsPlayIndex = 0;
+    ttsWaitingTime = 0;
+    _stop();
+  }
 
   @override
   void initState() {
@@ -41,6 +51,10 @@ class _HomePageState extends State<HomePage> {
 
     flutterTts.setCompletionHandler(() {
       if (ttsState == TtsState.playing || ttsState == TtsState.continued) {
+        // 재생 후, 다음 play 세팅
+        ttsPlayIndex += 1;
+        ttsWaitingTime = 0.5; // 임시. 여기서 할 필요 없어보이는데?
+
         _speak();
       } else {
         setState(() {
@@ -101,20 +115,34 @@ class _HomePageState extends State<HomePage> {
                       child: Text('등록한 주문이 없습니다.'),
                     );
                   }
-                  return ListView.builder(
+                  return ReorderableListView.builder(
                     itemCount: categoriesBox.length,
+                    onReorder: (oldIndex, newIndex) {
+                      if (newIndex != oldIndex) {
+                        final oldItem = categoriesBox.getAt(oldIndex);
+                        final newItem = categoriesBox.getAt(newIndex);
+
+                        if (newItem != null && oldItem != null) {
+                          final oldItem2 = CategoryModel(name: oldItem.name, texts: oldItem.texts, isSelected: oldItem.isSelected);
+                          final newItem2 = CategoryModel(name: newItem.name, texts: newItem.texts, isSelected: newItem.isSelected);
+                          categoriesBox.putAt(oldIndex, newItem2);
+                          categoriesBox.putAt(newIndex, oldItem2);
+                        }
+                      }
+                    },
                     itemBuilder: (context, index) {
                       final CategoryModel category =
                       categoriesBox.getAt(index) as CategoryModel;
                       return ExpansionTile(
+                        key: ValueKey(index),
                         title: Row(
                           children: [
                             Expanded(child: Text(category.name, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))),
                             SizedBox(width: 3),
-                            IconButton
-                              (onPressed: () {
-                              _showModal(context);
-                            }, icon: Icon(Icons.add), splashRadius: 18),
+                            IconButton(
+                                onPressed: () {
+                                  _showModal(context, index);
+                                }, icon: Icon(Icons.add), splashRadius: 18),
                             SizedBox(width: 3),
                             IconButton(
                                 onPressed: () {
@@ -122,12 +150,23 @@ class _HomePageState extends State<HomePage> {
                                 }, icon: Icon(Icons.delete), splashRadius: 18)
                           ],
                         ),
-                        children: category.texts
-                            .map((text) => ListTile(
-                          title: Text(text.content),
-                          onTap: () {},
-                        ))
-                            .toList(),
+                        children: [
+                          ...category.texts.map((text) => ListTile(
+                            title: Text(text.content),
+                            onTap: () {},
+                          )),
+                          ListTile(
+                            title: Text('재생목록 세팅 확인'),
+                            onTap: () {
+                              setTtsPlayList(category);
+                            },
+                          ),
+                          Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: Colors.grey[300],
+                          ),
+                        ],
                       );
                     },
                   );
@@ -188,6 +227,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+
   // 재생기(임시)
   Widget _btnSection() {
     return Container(
@@ -228,10 +268,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future _speak() async {
-    String text = "안녕하십니까. TTS 테스트 중입니다.";
-    await Future.delayed(Duration(seconds: 1)); // 1초 대기(Test)
-    var result = await flutterTts.speak(text);
-    print("_speak result : " + result.toString());
+    // String text = "안녕하십니까. TTS 테스트 중입니다.";
+    if (ttsWaitingTime != 0) await Future.delayed(Duration(milliseconds: (1000*ttsWaitingTime).toInt()));
+    if(ttsPlayList.length == 0) _stop();
+    if (ttsPlayList.length <= ttsPlayIndex) ttsPlayIndex = 0;
+    // TODO: TTS 세부속성 세팅
+    var result = await flutterTts.speak(ttsPlayList[ttsPlayIndex].content);
+
+
   }
 
   // Future _setAwaitOptions() async {
@@ -249,7 +293,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // 카테고리 내용 추가
-  void _showModal(BuildContext context) {
+  void _showModal(BuildContext context, int index) {
     showMaterialModalBottomSheet(
       context: context,
       builder: (context) => SingleChildScrollView(
@@ -272,7 +316,7 @@ class _HomePageState extends State<HomePage> {
                 leading: Icon(Icons.list),
                 onTap: () {
                   // Show choices
-                  _showMultipleModal(context);
+                  _showMultipleModal(context, index);
                 },
               ),
               Divider(),
@@ -291,7 +335,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // choice에서 카테고리 내용 가져오기
-  void _showMultipleModal(BuildContext context) {
+  void _showMultipleModal(BuildContext context, int idx) {
     showCupertinoModalBottomSheet(
       context: context,
       expand: true,
@@ -306,7 +350,7 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   for (final choice in HiveBoxes.choices.values)
-                    _buildChoiceTitleModal(context, choice.name, choice.texts),
+                    _buildChoiceTitleModal(context, choice.name, choice.texts, idx),
                 ],
               ),
             )
@@ -315,7 +359,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildChoiceTitleModal(BuildContext context, String name, List<ChoiceTextModel> texts) {
+  Widget _buildChoiceTitleModal(BuildContext context, String name, List<ChoiceTextModel> texts, int idx) {
     return Material(
         child: Column(
             children: [
@@ -323,7 +367,7 @@ class _HomePageState extends State<HomePage> {
                 title: Text(name),
                 onTap: () => showCupertinoModalBottomSheet(
                   context: context,
-                  builder: (context) => _buildChoiceTextModal(context, texts),
+                  builder: (context) => _buildChoiceTextModal(context, texts, idx),
                   backgroundColor: Colors.transparent,
                   // isDismissible: false,
                   expand: true,
@@ -335,7 +379,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildChoiceTextModal(BuildContext context, List<ChoiceTextModel> texts) {
+  Widget _buildChoiceTextModal(BuildContext context, List<ChoiceTextModel> texts, int idx) {
     return Material(
         child: CupertinoPageScaffold(
             navigationBar: CupertinoNavigationBar(
@@ -349,7 +393,17 @@ class _HomePageState extends State<HomePage> {
                         return Column(
                           children: [
                             ListTile(
-                              title: Text(texts[index].content),
+                                title: Text(texts[index].content),
+                                trailing: IconButton(
+                                    onPressed: () {
+                                      final box = Hive.box<CategoryModel>('categories');
+                                      CategoryModel category = box.getAt(idx)!;
+                                      category.texts.add(CategoryTextModel(content:texts[index].content, isContentSelected: false));
+                                      box.putAt(idx, category);
+                                    },
+                                    icon: Icon(Icons.add),
+                                    splashRadius: 18
+                                )
                             ),
                             Divider(height: 2, thickness: 1.4),
                           ],
