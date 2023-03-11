@@ -151,10 +151,34 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                         children: [
-                          ...category.texts.map((text) => ListTile(
-                            title: Text(text.content),
-                            onTap: () {},
-                          )),
+                          ReorderableListView(
+                            physics: NeverScrollableScrollPhysics(),  // 밖의 스크롤에 영향을 미치지 않게 설정
+                            scrollDirection: Axis.vertical,
+                              shrinkWrap: true,
+                              children: <Widget>[
+                                for(int idx = 0; idx < category.texts.length; idx++)
+                                  ListTile(
+                                    key: UniqueKey(),
+                                    title: Text(category.texts[idx].content),
+                                    trailing: ReorderableDragStartListener(
+                                      index: idx,
+                                      child: Icon(Icons.drag_handle),
+                                    ),
+                                  )
+                              ],
+                              onReorder: (oldIndex, newIndex) {
+                                if (oldIndex < newIndex) {
+                                  newIndex -= 1;
+                                }
+
+                                final oldItem = category.texts.removeAt(oldIndex);
+                                category.texts.insert(newIndex, oldItem);
+
+                                final newCategory = CategoryModel(name: category.name, texts: category.texts, isSelected: category.isSelected);
+
+                                categoriesBox.putAt(index, newCategory);
+                              },
+                          ),
                           ListTile(
                             title: Text('재생목록 세팅 확인'),
                             onTap: () {
