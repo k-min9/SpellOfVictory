@@ -119,6 +119,10 @@ class _HomePageState extends State<HomePage> {
                     itemCount: categoriesBox.length,
                     onReorder: (oldIndex, newIndex) {
                       if (newIndex != oldIndex) {
+                        if (oldIndex < newIndex) {
+                          newIndex -= 1;
+                        }
+                        print(oldIndex.toString() + "/" + newIndex.toString());
                         final oldItem = categoriesBox.getAt(oldIndex);
                         final newItem = categoriesBox.getAt(newIndex);
 
