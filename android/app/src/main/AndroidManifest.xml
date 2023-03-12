@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.spell_of_victory">
    <application
-        android:label="spell_of_victory"
+        android:label="승리의 주문"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
