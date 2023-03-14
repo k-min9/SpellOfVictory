@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:spell_of_victory/model/CategoryModel.dart';
@@ -428,6 +429,17 @@ class _HomePageState extends State<HomePage> {
                                       CategoryModel category = box.getAt(idx)!;
                                       category.texts.add(CategoryTextModel(content:texts[index].content, isContentSelected: false));
                                       box.putAt(idx, category);
+
+                                      // add 추가 toast
+                                      Fluttertoast.showToast(
+                                          msg: "주문이 추가되었습니다.",
+                                          toastLength: Toast.LENGTH_SHORT,
+                                          gravity: ToastGravity.CENTER,
+                                          timeInSecForIosWeb: 1,
+                                          backgroundColor: Colors.red,
+                                          textColor: Colors.white,
+                                          fontSize: 16.0
+                                      );
                                     },
                                     icon: Icon(Icons.add),
                                     splashRadius: 18

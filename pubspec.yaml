@@ -45,6 +45,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   modal_bottom_sheet: ^3.0.0-pre
   cool_alert: ^2.0.1
+  fluttertoast: ^8.2.1
 
 dev_dependencies:
 
