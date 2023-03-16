@@ -154,9 +154,19 @@ class _HomePageState extends State<HomePage> {
                       final CategoryModel category =
                       categoriesBox.getAt(index) as CategoryModel;
                       return ExpansionTile(
-                        leading: ReorderableDragStartListener(
-                          index: index,
-                          child: Icon(Icons.drag_handle),
+                        leading: IconButton(
+                          icon: Icon(
+                              Icons.menu_book,
+                              color: category.isSelected ? Colors.blue : Colors.grey,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              category.isSelected = !category.isSelected;
+                              categoriesBox.putAt(index, category);
+                              if (category.isSelected) _showSimpleToast("재생목록에 추가되었습니다.");
+                              else if (!category.isSelected) _showSimpleToast("재생목록에서 제거되었습니다.");
+                            });
+                          },
                         ),
                         trailing: ReorderableDragStartListener(
                           index: index,
@@ -241,8 +251,6 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                       ],
                                     ),
-
-
                                   )
                               ],
                               onReorder: (oldIndex, newIndex) {
