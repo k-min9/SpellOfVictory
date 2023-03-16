@@ -118,6 +118,7 @@ class _HomePageState extends State<HomePage> {
                     );
                   }
                   return ReorderableListView.builder(
+                    buildDefaultDragHandles: false,
                     itemCount: categoriesBox.length,
                     onReorder: (oldIndex, newIndex) async {
                       if (newIndex != oldIndex) {
@@ -153,10 +154,21 @@ class _HomePageState extends State<HomePage> {
                       final CategoryModel category =
                       categoriesBox.getAt(index) as CategoryModel;
                       return ExpansionTile(
+                        leading: ReorderableDragStartListener(
+                          index: index,
+                          child: Icon(Icons.drag_handle),
+                        ),
+                        trailing: ReorderableDragStartListener(
+                          index: index,
+                          child: Icon(Icons.drag_handle),
+                        ),
                         key: ValueKey(index),
                         title: Row(
                           children: [
-                            Expanded(child: Text(category.name, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))),
+                            Expanded(child: Text(
+                                category.name + " (" + category.texts.length.toString() + ")",
+                                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))
+                            ),
                             SizedBox(width: 3),
                             IconButton(
                                 onPressed: () {
@@ -185,6 +197,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                         children: [
                           ReorderableListView(
+                            buildDefaultDragHandles: false,
                             physics: NeverScrollableScrollPhysics(),  // 밖의 스크롤에 영향을 미치지 않게 설정
                             scrollDirection: Axis.vertical,
                               shrinkWrap: true,
@@ -193,10 +206,43 @@ class _HomePageState extends State<HomePage> {
                                   ListTile(
                                     key: UniqueKey(),
                                     title: Text(category.texts[idx].content),
-                                    trailing: ReorderableDragStartListener(
-                                      index: idx,
-                                      child: Icon(Icons.drag_handle),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        InkWell(
+                                          onTap: () {
+                                            print('hello');
+                                            // 카테고리 삭제
+                                            CoolAlert.show(
+                                                context: context,
+                                                type: CoolAlertType.confirm,
+                                                title: '삭제 확인',
+                                                text: '정말 삭제하시겠습니까?',
+                                                confirmBtnText: '확인',
+                                                cancelBtnText: '취소',
+                                                showCancelBtn: true,
+                                                reverseBtnOrder: true,
+                                                onConfirmBtnTap: () async {
+                                                  category.texts.removeAt(idx);
+                                                  final newCategory = CategoryModel(name: category.name, texts: category.texts, isSelected: category.isSelected);
+                                                  await categoriesBox.putAt(index, newCategory);
+                                                  _showSimpleToast("삭제되었습니다");
+                                                }
+                                            );
+                                          },
+                                          child: AbsorbPointer(
+                                            child: Icon(Icons.delete),
+                                          ),
+                                        ),
+                                        SizedBox(width: 15),
+                                        ReorderableDragStartListener(
+                                          index: idx,
+                                          child: Icon(Icons.drag_handle),
+                                        ),
+                                      ],
                                     ),
+
+
                                   )
                               ],
                               onReorder: (oldIndex, newIndex) {
