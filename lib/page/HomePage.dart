@@ -1,3 +1,4 @@
+import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -118,20 +119,33 @@ class _HomePageState extends State<HomePage> {
                   }
                   return ReorderableListView.builder(
                     itemCount: categoriesBox.length,
-                    onReorder: (oldIndex, newIndex) {
+                    onReorder: (oldIndex, newIndex) async {
                       if (newIndex != oldIndex) {
                         if (oldIndex < newIndex) {
                           newIndex -= 1;
                         }
-                        print(oldIndex.toString() + "/" + newIndex.toString());
-                        final oldItem = categoriesBox.getAt(oldIndex);
-                        final newItem = categoriesBox.getAt(newIndex);
+                        // final oldItem = categoriesBox.getAt(oldIndex);
+                        // final newItem = categoriesBox.getAt(newIndex);
+                        //
+                        // if (newItem != null && oldItem != null) {
+                        //   final oldItem2 = CategoryModel(name: oldItem.name, texts: oldItem.texts, isSelected: oldItem.isSelected);
+                        //   final newItem2 = CategoryModel(name: newItem.name, texts: newItem.texts, isSelected: newItem.isSelected);
+                        //   categoriesBox.putAt(oldIndex, newItem2);
+                        //   categoriesBox.putAt(newIndex, oldItem2);
+                        // }
 
-                        if (newItem != null && oldItem != null) {
+                        final oldItem = categoriesBox.getAt(oldIndex);
+                        await categoriesBox.deleteAt(oldIndex);
+
+                        if (oldItem != null) {
                           final oldItem2 = CategoryModel(name: oldItem.name, texts: oldItem.texts, isSelected: oldItem.isSelected);
-                          final newItem2 = CategoryModel(name: newItem.name, texts: newItem.texts, isSelected: newItem.isSelected);
-                          categoriesBox.putAt(oldIndex, newItem2);
-                          categoriesBox.putAt(newIndex, oldItem2);
+                          categoriesBox.add(CategoryModel(name: "swap", texts: [], isSelected: false));  // index, length용 더미
+                          final lastIndex = categoriesBox.length - 1;
+                          for (var i = lastIndex; i > newIndex; i--) {
+                            final previous = await categoriesBox.getAt(i - 1);
+                            await categoriesBox.putAt(i, CategoryModel(name: previous!.name, texts: previous!.texts, isSelected: previous!.isSelected)!);
+                          }
+                          await categoriesBox.putAt(newIndex, oldItem2);
                         }
                       }
                     },
@@ -151,7 +165,21 @@ class _HomePageState extends State<HomePage> {
                             SizedBox(width: 3),
                             IconButton(
                                 onPressed: () {
-                                  categoriesBox.deleteAt(index);
+                                  // 카테고리 삭제
+                                  CoolAlert.show(
+                                      context: context,
+                                      type: CoolAlertType.confirm,
+                                    title: '삭제 확인',
+                                    text: '정말 삭제하시겠습니까?',
+                                    confirmBtnText: '확인',
+                                    cancelBtnText: '취소',
+                                    showCancelBtn: true,
+                                    reverseBtnOrder: true,
+                                    onConfirmBtnTap: () async {
+                                        await categoriesBox.deleteAt(index);
+                                        _showSimpleToast("삭제되었습니다");
+                                    }
+                                  );
                                 }, icon: Icon(Icons.delete), splashRadius: 18)
                           ],
                         ),
@@ -431,15 +459,7 @@ class _HomePageState extends State<HomePage> {
                                       box.putAt(idx, category);
 
                                       // add 추가 toast
-                                      Fluttertoast.showToast(
-                                          msg: "주문이 추가되었습니다.",
-                                          toastLength: Toast.LENGTH_SHORT,
-                                          gravity: ToastGravity.CENTER,
-                                          timeInSecForIosWeb: 1,
-                                          backgroundColor: Colors.red,
-                                          textColor: Colors.white,
-                                          fontSize: 16.0
-                                      );
+                                      _showSimpleToast("주문을 추가하였습니다.");
                                     },
                                     icon: Icon(Icons.add),
                                     splashRadius: 18
@@ -454,6 +474,19 @@ class _HomePageState extends State<HomePage> {
                 )
             )
         )
+    );
+  }
+
+  void _showSimpleToast(String msgText) {
+    Fluttertoast.cancel();
+    Fluttertoast.showToast(
+        msg: msgText,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0
     );
   }
 
