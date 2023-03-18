@@ -30,11 +30,26 @@ class _HomePageState extends State<HomePage> {
   int ttsPlayIndex = 0;
   double ttsWaitingTime = 0;
 
-  void setTtsPlayList(CategoryModel category) {
-    ttsPlayList = category.texts;
+  void _setTtsPlayList() {
+    int cateNum = 0;
+    int textNum = 0;
+    ttsPlayList = [];
+    final categoriesBox = Hive.box<CategoryModel>('categories');
+    for (int i = 0; i < categoriesBox.length; i++) {
+      final category = categoriesBox.getAt(i) as CategoryModel;
+      if (category.isSelected) {
+        cateNum++;
+        for (int j= 0; j < category.texts.length; j++) {
+          // 일단은 컨텐츠 추가 확인 안함
+          ttsPlayList.add(category.texts[j]);
+          textNum++;
+        }
+      }
+    }
     ttsPlayIndex = 0;
     ttsWaitingTime = 0;
     _stop();
+    _showSimpleToast(cateNum.toString() + "개의 주문서가 등록되었습니다.");
   }
 
   @override
@@ -125,15 +140,6 @@ class _HomePageState extends State<HomePage> {
                         if (oldIndex < newIndex) {
                           newIndex -= 1;
                         }
-                        // final oldItem = categoriesBox.getAt(oldIndex);
-                        // final newItem = categoriesBox.getAt(newIndex);
-                        //
-                        // if (newItem != null && oldItem != null) {
-                        //   final oldItem2 = CategoryModel(name: oldItem.name, texts: oldItem.texts, isSelected: oldItem.isSelected);
-                        //   final newItem2 = CategoryModel(name: newItem.name, texts: newItem.texts, isSelected: newItem.isSelected);
-                        //   categoriesBox.putAt(oldIndex, newItem2);
-                        //   categoriesBox.putAt(newIndex, oldItem2);
-                        // }
 
                         final oldItem = categoriesBox.getAt(oldIndex);
                         await categoriesBox.deleteAt(oldIndex);
@@ -266,12 +272,12 @@ class _HomePageState extends State<HomePage> {
                                 categoriesBox.putAt(index, newCategory);
                               },
                           ),
-                          ListTile(
-                            title: Text('재생목록 세팅 확인'),
-                            onTap: () {
-                              setTtsPlayList(category);
-                            },
-                          ),
+                          // ListTile(
+                          //   title: Text('재생목록 세팅 확인'),
+                          //   onTap: () {
+                          //     setTtsPlayList();
+                          //   },
+                          // ),
                           Divider(
                             height: 1,
                             thickness: 1,
@@ -338,6 +344,19 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  CategoryModel? _swapCategory(Box<CategoryModel> categoriesBox, int oldIndex, int newIndex) {
+    final oldItem = categoriesBox.getAt(oldIndex);
+    final newItem = categoriesBox.getAt(newIndex);
+
+    if (newItem != null && oldItem != null) {
+      final oldItem2 = CategoryModel(name: oldItem.name, texts: oldItem.texts, isSelected: oldItem.isSelected);
+      final newItem2 = CategoryModel(name: newItem.name, texts: newItem.texts, isSelected: newItem.isSelected);
+      categoriesBox.putAt(oldIndex, newItem2);
+      categoriesBox.putAt(newIndex, oldItem2);
+    }
+    return oldItem;
+  }
+
 
   // 재생기(임시)
   Widget _btnSection() {
@@ -380,8 +399,12 @@ class _HomePageState extends State<HomePage> {
 
   Future _speak() async {
     // String text = "안녕하십니까. TTS 테스트 중입니다.";
+    _setTtsPlayList();
     if (ttsWaitingTime != 0) await Future.delayed(Duration(milliseconds: (1000*ttsWaitingTime).toInt()));
-    if(ttsPlayList.length == 0) _stop();
+    if(ttsPlayList.length == 0) {
+      _showSimpleToast("등록된 주문서가 없습니다.");
+      _stop();
+    }
     if (ttsPlayList.length <= ttsPlayIndex) ttsPlayIndex = 0;
     // TODO: TTS 세부속성 세팅
     var result = await flutterTts.speak(ttsPlayList[ttsPlayIndex].content);
