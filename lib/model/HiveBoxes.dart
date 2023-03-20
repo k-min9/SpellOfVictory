@@ -3,11 +3,13 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:spell_of_victory/model/CategoryModel.dart';
 import 'package:spell_of_victory/model/ChoiceModel.dart';
 import 'package:spell_of_victory/model/SettingModel.dart';
+import 'package:spell_of_victory/model/VoiceModel.dart';
 
 class HiveBoxes {
   static late Box categories;
   static late Box choices;
   static late Box settings;
+  static late Box voices;
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -16,9 +18,11 @@ class HiveBoxes {
     Hive.registerAdapter(ChoiceModelAdapter());
     Hive.registerAdapter(ChoiceTextModelAdapter());
     Hive.registerAdapter(SettingModelAdapter());
+    Hive.registerAdapter(VoiceModelAdapter());
     categories = await Hive.openBox<CategoryModel>('categories');
     choices = await Hive.openBox<ChoiceModel>('choice');
     settings = await Hive.openBox<SettingModel>('settings');
+    voices = await Hive.openBox<VoiceModel>('voices');
 
     // // hive 테스트용 (Category)
     // final group1 = CategoryModel(name:'group1', texts:[CategoryTextModel(content: '선택', isContentSelected: false)], isSelected: false);
