@@ -24,13 +24,14 @@ class VoiceModelAdapter extends TypeAdapter<VoiceModel> {
       ttsVolume: fields[4] as double,
       ttsPitch: fields[5] as double,
       ttsRate: fields[6] as double,
+      ttsLocale: fields[7] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, VoiceModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.voiceName)
       ..writeByte(1)
@@ -44,7 +45,9 @@ class VoiceModelAdapter extends TypeAdapter<VoiceModel> {
       ..writeByte(5)
       ..write(obj.ttsPitch)
       ..writeByte(6)
-      ..write(obj.ttsRate);
+      ..write(obj.ttsRate)
+      ..writeByte(7)
+      ..write(obj.ttsLocale);
   }
 
   @override

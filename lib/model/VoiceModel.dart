@@ -10,7 +10,7 @@ class VoiceModel extends HiveObject {
   String voiceName = 'default';
 
   @HiveField(1)
-  String ttsEngine = 'google';
+  String ttsEngine = 'com.google.android.tts';
 
   @HiveField(2)
   String ttsLanguage = 'ko-KR';
@@ -27,6 +27,9 @@ class VoiceModel extends HiveObject {
   @HiveField(6)
   double ttsRate = 1;
 
+  @HiveField(7)
+  String ttsLocale = 'ko';
+
   VoiceModel({
     required this.voiceName,
     required this.ttsEngine,
@@ -35,6 +38,7 @@ class VoiceModel extends HiveObject {
     required this.ttsVolume,
     required this.ttsPitch,
     required this.ttsRate,
+    required this.ttsLocale
   });
 
   VoiceModel.defaultValues();
