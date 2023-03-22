@@ -95,9 +95,17 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
   List<DropdownMenuItem<String>> getEnginesDropDownMenuItems(dynamic engines) {
     var items = <DropdownMenuItem<String>>[];
     for (dynamic type in engines) {
+      String? val = type as String?;
+      if (val != null && val.contains('samsung')) {
+        if (_ttsLocale.contains('ko')) {val = '삼성';}
+        else {val = 'samsung';}
+      } else if (val != null && val.contains('google')) {
+        if (_ttsLocale.contains('ko')) {val = '구글';}
+        else {val = 'google';}
+      }
       items.add(DropdownMenuItem(
           value: type as String?,
-          child: Text(type as String)
+          child: Text(val!)
       )
       );}
     return items;
@@ -131,12 +139,30 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
       ),
   );
 
-  List<DropdownMenuItem<String>> getLanguageDropDownMenuItems(
-      dynamic languages) {
+  List<DropdownMenuItem<String>> getLanguageDropDownMenuItems(dynamic languages) {
     var items = <DropdownMenuItem<String>>[];
+    var duplicateChk = Set<String>();
     for (dynamic type in languages) {
+      String? val = type as String?;
+      if (val != null && val.contains('ko')) {
+        if (_ttsLocale.contains('ko')) {val = '한국어';}
+        else {val = 'Korean';}
+      } else if (val != null && val.contains('en')) {
+        if (_ttsLocale.contains('ko')) {val = '영어';}
+        else {val = 'English';}
+      } else {
+        continue;
+      }
+
+      if (duplicateChk.contains(val)) {
+        continue;
+      } else {
+        duplicateChk.add(val);
+      }
+
       items.add(DropdownMenuItem(
-          value: type as String?, child: Text(type as String)));
+          value: type as String?,
+          child: Text(val!)));
     }
     return items;
   }
@@ -215,39 +241,40 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
             //   },
             // ),
             SizedBox(height: 16),
-            Text('TTS Voice Type', style: TextStyle(fontSize: 18)),
-            SizedBox(height: 8),
-            DropdownButtonFormField<int>(
-              value: _ttsVoiceType,
-              items: [
-                DropdownMenuItem<int>(
-                  value: 0,
-                  child: Text('Type 1'),
-                ),
-                DropdownMenuItem<int>(
-                  value: 1,
-                  child: Text('Type 2'),
-                ),
-                DropdownMenuItem<int>(
-                  value: 2,
-                  child: Text('Type 3'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _ttsVoiceType = value!;
-                });
-              },
-            ),
+            // Text('TTS Voice Type', style: TextStyle(fontSize: 18)),
+            // SizedBox(height: 8),
+            // DropdownButtonFormField<int>(
+            //   value: _ttsVoiceType,
+            //   items: [
+            //     DropdownMenuItem<int>(
+            //       value: 0,
+            //       child: Text('Type 1'),
+            //     ),
+            //     DropdownMenuItem<int>(
+            //       value: 1,
+            //       child: Text('Type 2'),
+            //     ),
+            //     DropdownMenuItem<int>(
+            //       value: 2,
+            //       child: Text('Type 3'),
+            //     ),
+            //   ],
+            //   onChanged: (value) {
+            //     setState(() {
+            //       _ttsVoiceType = value!;
+            //     });
+            //   },
+            // ),
             SizedBox(height: 16),
-            Text('TTS Volume', style: TextStyle(fontSize: 18)),
+            Text('Voice Volume : ${_ttsVolume.toStringAsFixed(1)}', style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
             Slider(
               value: _ttsVolume,
-              min: 0,
-              max: 1,
+              min: 0.0,
+              max: 1.0,
               divisions: 10,
-              label: 'Volume: $_ttsVolume',
+              label: 'Volume: ${_ttsVolume.toStringAsFixed(1)}',
+              activeColor: Colors.redAccent,
               onChanged: (value) {
                 setState(() {
                   _ttsVolume = value;
@@ -255,14 +282,14 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
               },
             ),
             SizedBox(height: 16),
-            Text('TTS Pitch', style: TextStyle(fontSize: 18)),
+            Text('Voice Pitch : ${_ttsPitch.toStringAsFixed(1)}', style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
             Slider(
               value: _ttsPitch,
-              min: 0,
-              max: 2,
-              divisions: 20,
-              label: 'Pitch: $_ttsPitch',
+              min: 0.5,
+              max: 2.0,
+              divisions: 15,
+              label: 'Pitch: ${_ttsPitch.toStringAsFixed(1)}',
               onChanged: (value) {
                 setState(() {
                   _ttsPitch = value;
@@ -270,14 +297,15 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
               },
             ),
             SizedBox(height: 16),
-            Text('TTS Rate', style: TextStyle(fontSize: 18)),
+            Text('Voice Rate : ${_ttsRate.toStringAsFixed(1)}', style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
             Slider(
               value: _ttsRate,
-              min: 0.5,
-              max: 2,
-              divisions: 15,
-              label: 'Rate: $_ttsRate',
+              min: 0.0,
+              max: 1.0,
+              divisions: 10,
+              label: 'Rate: ${_ttsRate.toStringAsFixed(1)}',
+              activeColor: Colors.green,
               onChanged: (value) {
                 setState(() {
                   _ttsRate = value;
