@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -30,18 +31,21 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
   late FlutterTts flutterTts;
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
     flutterTts = Get.find();
     _voiceName = widget.voice.voiceName;
     _ttsEngine = widget.voice.ttsEngine;
-    await flutterTts.setEngine(_ttsEngine);  // 초기값 세팅용
+    // flutterTts.setEngine(_ttsEngine);  // 초기값 세팅용
     _ttsLanguage = widget.voice.ttsLanguage;
     _ttsVoiceType = widget.voice.ttsVoiceType;
     _ttsVolume = widget.voice.ttsVolume;
     _ttsPitch = widget.voice.ttsPitch;
     _ttsRate = widget.voice.ttsRate;
-    if (_ttsLocale.isEmpty) _ttsLocale = window.locale.languageCode;
+    _ttsLocale = widget.voice.ttsLocale;
+    if (_ttsLocale == null || _ttsLocale.isEmpty) {
+      _ttsLocale = window.locale.languageCode;
+    }
   }
 
   // TTS 관련 리스트
@@ -121,6 +125,7 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
         onChanged: (String? selectedType) {
           setState(() {
             _ttsLanguage = selectedType!;
+            if (_ttsLanguage.contains('-')) _ttsLocale = _ttsLanguage.substring(0, 2);
           });
         },
       ),
@@ -140,7 +145,33 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Voice Detail'),
+        title: Row(
+          children: [
+            Expanded(child: Text('Voice Detail')),
+            IconButton(
+                onPressed: () async {
+                  // TTS 세팅
+                  await flutterTts.setEngine(_ttsEngine);
+                  await flutterTts.setLanguage(_ttsLanguage);
+                  await flutterTts.setVolume(_ttsVolume);
+                  await flutterTts.setPitch(_ttsPitch);
+                  await flutterTts.setSpeechRate(_ttsRate);
+
+                  // 샘플보이스
+                  var random = Random();
+                  await flutterTts.stop();
+                  if (_ttsLanguage.contains('ko')) {
+                    List<String> samples = ['안녕하세요', '테스트 문장입니다.', '오늘도 좋은 하루되세요'];
+                    await flutterTts.speak(samples[random.nextInt(3)]);
+                  } else {
+                    List<String> samples = ['hello', 'sample voice here', 'have a good day'];
+                    await flutterTts.speak(samples[random.nextInt(3)]);
+                  }
+                },
+                icon: Icon(Icons.volume_up)
+            )
+          ],
+        ),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
