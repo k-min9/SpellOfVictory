@@ -13,6 +13,10 @@ class HiveBoxes {
 
   static Future<void> init() async {
     await Hive.initFlutter();
+
+    // hive 초기화
+    // await Hive.deleteFromDisk();
+
     Hive.registerAdapter(CategoryModelAdapter());
     Hive.registerAdapter(CategoryTextModelAdapter());
     Hive.registerAdapter(ChoiceModelAdapter());
@@ -22,7 +26,11 @@ class HiveBoxes {
     categories = await Hive.openBox<CategoryModel>('categories');
     choices = await Hive.openBox<ChoiceModel>('choice');
     settings = await Hive.openBox<SettingModel>('settings');
-    voices = await Hive.openBox<VoiceModel>('voices');
+    voices = await Hive.openBox<VoiceModel>('voice');
+
+    // voices.clear();
+
+
 
     // // hive 테스트용 (Category)
     // final group1 = CategoryModel(name:'group1', texts:[CategoryTextModel(content: '선택', isContentSelected: false)], isSelected: false);
