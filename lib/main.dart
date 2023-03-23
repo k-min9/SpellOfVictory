@@ -79,8 +79,8 @@ class _MyAppState extends State<MyApp> {
                 label: 'Register',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.settings),
-                label: 'Settings',
+                icon: Icon(Icons.volume_up),
+                label: 'Voice',
               ),
             ],
           ),
