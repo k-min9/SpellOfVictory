@@ -29,10 +29,12 @@ class _HomePageState extends State<HomePage> {
   late List<CategoryTextModel> ttsPlayList = [];
   int ttsPlayIndex = 0;
   double ttsWaitingTime = 0;
+  int cateNum = 0;  // 등록된 카테고리 숫자
+  int textNum = 0;  // 등록된 주문 수
 
   void _setTtsPlayList() {
-    int cateNum = 0;
-    int textNum = 0;
+    cateNum = 0;
+    textNum = 0;
     ttsPlayList = [];
     final categoriesBox = Hive.box<CategoryModel>('categories');
     for (int i = 0; i < categoriesBox.length; i++) {
@@ -49,7 +51,6 @@ class _HomePageState extends State<HomePage> {
     ttsPlayIndex = 0;
     ttsWaitingTime = 0;
     _stop();
-    _showSimpleToast(cateNum.toString() + "개의 주문서가 등록되었습니다.");
   }
 
   @override
@@ -119,103 +120,108 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Column(
-          children: [
-            Expanded(
-              child: ValueListenableBuilder(
-                valueListenable: Hive.box<CategoryModel>('categories').listenable(),
-                builder: (context, Box<CategoryModel> categoriesBox, _) {
-                  if (categoriesBox.values.isEmpty) {
-                    return Center(
-                      child: Text('등록한 주문이 없습니다.'),
-                    );
-                  }
-                  return ReorderableListView.builder(
-                    buildDefaultDragHandles: false,
-                    itemCount: categoriesBox.length,
-                    onReorder: (oldIndex, newIndex) async {
-                      if (newIndex != oldIndex) {
-                        if (oldIndex < newIndex) {
-                          newIndex -= 1;
-                        }
-
-                        final oldItem = categoriesBox.getAt(oldIndex);
-                        await categoriesBox.deleteAt(oldIndex);
-
-                        if (oldItem != null) {
-                          final oldItem2 = CategoryModel(name: oldItem.name, texts: oldItem.texts, isSelected: oldItem.isSelected);
-                          categoriesBox.add(CategoryModel(name: "swap", texts: [], isSelected: false));  // index, length용 더미
-                          final lastIndex = categoriesBox.length - 1;
-                          for (var i = lastIndex; i > newIndex; i--) {
-                            final previous = await categoriesBox.getAt(i - 1);
-                            await categoriesBox.putAt(i, CategoryModel(name: previous!.name, texts: previous!.texts, isSelected: previous!.isSelected)!);
+    return Scaffold(
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              Expanded(
+                child: ValueListenableBuilder(
+                  valueListenable: Hive.box<CategoryModel>('categories').listenable(),
+                  builder: (context, Box<CategoryModel> categoriesBox, _) {
+                    if (categoriesBox.values.isEmpty) {
+                      return Center(
+                        child: Text('등록한 주문이 없습니다.'),
+                      );
+                    }
+                    return ReorderableListView.builder(
+                      buildDefaultDragHandles: false,
+                      itemCount: categoriesBox.length,
+                      onReorder: (oldIndex, newIndex) async {
+                        if (newIndex != oldIndex) {
+                          if (oldIndex < newIndex) {
+                            newIndex -= 1;
                           }
-                          await categoriesBox.putAt(newIndex, oldItem2);
+
+                          final oldItem = categoriesBox.getAt(oldIndex);
+                          await categoriesBox.deleteAt(oldIndex);
+
+                          if (oldItem != null) {
+                            final oldItem2 = CategoryModel(name: oldItem.name, texts: oldItem.texts, isSelected: oldItem.isSelected);
+                            categoriesBox.add(CategoryModel(name: "swap", texts: [], isSelected: false));  // index, length용 더미
+                            final lastIndex = categoriesBox.length - 1;
+                            for (var i = lastIndex; i > newIndex; i--) {
+                              final previous = await categoriesBox.getAt(i - 1);
+                              await categoriesBox.putAt(i, CategoryModel(name: previous!.name, texts: previous!.texts, isSelected: previous!.isSelected)!);
+                            }
+                            await categoriesBox.putAt(newIndex, oldItem2);
+                          }
                         }
-                      }
-                    },
-                    itemBuilder: (context, index) {
-                      final CategoryModel category =
-                      categoriesBox.getAt(index) as CategoryModel;
-                      return ExpansionTile(
-                        leading: IconButton(
-                          icon: Icon(
+                      },
+                      itemBuilder: (context, index) {
+                        final CategoryModel category =
+                        categoriesBox.getAt(index) as CategoryModel;
+                        return ExpansionTile(
+                          leading: IconButton(
+                            icon: Icon(
                               Icons.menu_book,
                               color: category.isSelected ? Colors.blue : Colors.grey,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              category.isSelected = !category.isSelected;
-                              categoriesBox.putAt(index, category);
-                              if (category.isSelected) _showSimpleToast("재생목록에 추가되었습니다.");
-                              else if (!category.isSelected) _showSimpleToast("재생목록에서 제거되었습니다.");
-                            });
-                          },
-                        ),
-                        trailing: ReorderableDragStartListener(
-                          index: index,
-                          child: Icon(Icons.drag_handle),
-                        ),
-                        key: ValueKey(index),
-                        title: Row(
-                          children: [
-                            Expanded(child: Text(
-                                category.name + " (" + category.texts.length.toString() + ")",
-                                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))
                             ),
-                            SizedBox(width: 3),
-                            IconButton(
-                                onPressed: () {
-                                  _showModal(context, index);
-                                }, icon: Icon(Icons.add), splashRadius: 18),
-                            SizedBox(width: 3),
-                            IconButton(
-                                onPressed: () {
-                                  // 카테고리 삭제
-                                  CoolAlert.show(
-                                      context: context,
-                                      type: CoolAlertType.confirm,
-                                    title: '삭제 확인',
-                                    text: '정말 삭제하시겠습니까?',
-                                    confirmBtnText: '확인',
-                                    cancelBtnText: '취소',
-                                    showCancelBtn: true,
-                                    reverseBtnOrder: true,
-                                    onConfirmBtnTap: () async {
-                                        await categoriesBox.deleteAt(index);
-                                        _showSimpleToast("삭제되었습니다");
-                                    }
-                                  );
-                                }, icon: Icon(Icons.delete), splashRadius: 18)
-                          ],
-                        ),
-                        children: [
-                          ReorderableListView(
-                            buildDefaultDragHandles: false,
-                            physics: NeverScrollableScrollPhysics(),  // 밖의 스크롤에 영향을 미치지 않게 설정
-                            scrollDirection: Axis.vertical,
+                            onPressed: () {
+                              setState(() {
+                                category.isSelected = !category.isSelected;
+                                categoriesBox.putAt(index, category);
+                                if (category.isSelected) _showSimpleToast("재생목록에 추가되었습니다.");
+                                else if (!category.isSelected) _showSimpleToast("재생목록에서 제거되었습니다.");
+                              });
+                            },
+                          ),
+                          // trailing: ReorderableDragStartListener(
+                          //   index: index,
+                          //   child: Icon(Icons.drag_handle),
+                          // ),
+                          key: ValueKey(index),
+                          title: Row(
+                            children: [
+                              Expanded(child: Text(
+                                  category.name + " (" + category.texts.length.toString() + ")",
+                                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))
+                              ),
+                              ReorderableDragStartListener(
+                                index: index,
+                                child: Icon(Icons.drag_handle),
+                              ),
+                              SizedBox(width: 3),
+                              IconButton(
+                                  onPressed: () {
+                                    _showModal(context, index);
+                                  }, icon: Icon(Icons.add), splashRadius: 18),
+                              SizedBox(width: 3),
+                              IconButton(
+                                  onPressed: () {
+                                    // 카테고리 삭제
+                                    CoolAlert.show(
+                                        context: context,
+                                        type: CoolAlertType.confirm,
+                                        title: '삭제 확인',
+                                        text: '정말 삭제하시겠습니까?',
+                                        confirmBtnText: '확인',
+                                        cancelBtnText: '취소',
+                                        showCancelBtn: true,
+                                        reverseBtnOrder: true,
+                                        onConfirmBtnTap: () async {
+                                          await categoriesBox.deleteAt(index);
+                                          _showSimpleToast("삭제되었습니다");
+                                        }
+                                    );
+                                  }, icon: Icon(Icons.delete), splashRadius: 18)
+                            ],
+                          ),
+                          children: [
+                            ReorderableListView(
+                              buildDefaultDragHandles: false,
+                              physics: NeverScrollableScrollPhysics(),  // 밖의 스크롤에 영향을 미치지 않게 설정
+                              scrollDirection: Axis.vertical,
                               shrinkWrap: true,
                               children: <Widget>[
                                 for(int idx = 0; idx < category.texts.length; idx++)
@@ -271,76 +277,111 @@ class _HomePageState extends State<HomePage> {
 
                                 categoriesBox.putAt(index, newCategory);
                               },
-                          ),
-                          // ListTile(
-                          //   title: Text('재생목록 세팅 확인'),
-                          //   onTap: () {
-                          //     setTtsPlayList();
-                          //   },
-                          // ),
-                          Divider(
-                            height: 1,
-                            thickness: 1,
-                            color: Colors.grey[300],
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-            SizedBox(height: 10),
-            _btnSection(),
-            SizedBox(height: 10),
-            GestureDetector(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: Text("새로운 선택지"),
-                      content: TextField(
-                        controller: _textEditingController,
-                        decoration: InputDecoration(
-                          hintText: '선택지 이름을 적어주세요.',
-                          contentPadding: EdgeInsets.all(10),
-                        ),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            final newCategory = CategoryModel(name: _textEditingController.text, texts: [], isSelected: false);
-                            HiveBoxes.categories.add(newCategory);
-                            Navigator.pop(context);
-                          },
-                          child: Text('OK'),
-                        ),
-                      ],
+                            ),
+                            // ListTile(
+                            //   title: Text('재생목록 세팅 확인'),
+                            //   onTap: () {
+                            //     setTtsPlayList();
+                            //   },
+                            // ),
+                            Divider(
+                              height: 1,
+                              thickness: 1,
+                              color: Colors.grey[300],
+                            ),
+                          ],
+                        );
+                      },
                     );
                   },
-                );
-              },
-              child: Container(
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.grey[200],
-                ),
-                child: Text(
-                  '새로운 카테고리',
-                  style: TextStyle(fontSize: 16),
                 ),
               ),
-            ),
-            SizedBox(height: 10),
-          ],
-        )
-      ],
+              SizedBox(height: 10),
+              _btnSection(),
+              SizedBox(height: 10),
+              // GestureDetector(
+              //   onTap: () {
+              //     showDialog(
+              //       context: context,
+              //       builder: (context) {
+              //         return AlertDialog(
+              //           title: Text("새로운 선택지"),
+              //           content: TextField(
+              //             controller: _textEditingController,
+              //             decoration: InputDecoration(
+              //               hintText: '선택지 이름을 적어주세요.',
+              //               contentPadding: EdgeInsets.all(10),
+              //             ),
+              //           ),
+              //           actions: [
+              //             TextButton(
+              //               onPressed: () => Navigator.pop(context),
+              //               child: Text('Cancel'),
+              //             ),
+              //             TextButton(
+              //               onPressed: () {
+              //                 final newCategory = CategoryModel(name: _textEditingController.text, texts: [], isSelected: false);
+              //                 HiveBoxes.categories.add(newCategory);
+              //                 Navigator.pop(context);
+              //               },
+              //               child: Text('OK'),
+              //             ),
+              //           ],
+              //         );
+              //       },
+              //     );
+              //   },
+              //   child: Container(
+              //     padding: EdgeInsets.all(10),
+              //     decoration: BoxDecoration(
+              //       borderRadius: BorderRadius.circular(10),
+              //       color: Colors.grey[200],
+              //     ),
+              //     child: Text(
+              //       '새로운 카테고리',
+              //       style: TextStyle(fontSize: 16),
+              //     ),
+              //   ),
+              // ),
+              SizedBox(height: 10),
+            ],
+          )
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text("새로운 주문"),
+                content: TextField(
+                  controller: _textEditingController,
+                  decoration: InputDecoration(
+                    hintText: '선택지 이름을 적어주세요.',
+                    contentPadding: EdgeInsets.all(10),
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      final newCategory = CategoryModel(name: _textEditingController.text, texts: [], isSelected: false);
+                      HiveBoxes.categories.add(newCategory);
+                      Navigator.pop(context);
+                    },
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+        child: Icon(Icons.add),
+      ),
     );
   }
 
@@ -366,7 +407,7 @@ class _HomePageState extends State<HomePage> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildButtonColumn(
-              Colors.green, Colors.greenAccent, Icons.play_arrow, 'PLAY', _speak),
+              Colors.green, Colors.greenAccent, Icons.play_arrow, 'PLAY', _speakStart),
           _buildButtonColumn(
               Colors.red, Colors.redAccent, Icons.stop, 'STOP', _stop),
           _buildButtonColumn(
@@ -397,19 +438,22 @@ class _HomePageState extends State<HomePage> {
         ]);
   }
 
-  Future _speak() async {
-    // String text = "안녕하십니까. TTS 테스트 중입니다.";
+  Future _speakStart() async {
     _setTtsPlayList();
-    if (ttsWaitingTime != 0) await Future.delayed(Duration(milliseconds: (1000*ttsWaitingTime).toInt()));
     if(ttsPlayList.length == 0) {
       _showSimpleToast("등록된 주문서가 없습니다.");
       _stop();
+    } else {
+      _showSimpleToast(cateNum.toString() + "개의 주문서를 재생하겠습니다.");
     }
+    _speak();
+  }
+
+  Future _speak() async {
+    if (ttsWaitingTime != 0) await Future.delayed(Duration(milliseconds: (1000*ttsWaitingTime).toInt()));
     if (ttsPlayList.length <= ttsPlayIndex) ttsPlayIndex = 0;
     // TODO: TTS 세부속성 세팅
     var result = await flutterTts.speak(ttsPlayList[ttsPlayIndex].content);
-
-
   }
 
   // Future _setAwaitOptions() async {
@@ -419,11 +463,13 @@ class _HomePageState extends State<HomePage> {
   Future _stop() async {
     var result = await flutterTts.stop();
     if (result == 1) setState(() => ttsState = TtsState.stopped);
+    _showSimpleToast("주문서 재생을 중지");
   }
 
   Future _pause() async {
     var result = await flutterTts.pause();
     if (result == 1) setState(() => ttsState = TtsState.paused);
+    _showSimpleToast("주문서 재생 일시정지");
   }
 
   // 카테고리 내용 추가
