@@ -17,7 +17,7 @@ class _SettingPageState extends State<SettingPage> {
         title: Text('Setting'),
       ),
       body: ValueListenableBuilder(
-        valueListenable: Hive.box<VoiceModel>('voices').listenable(),
+        valueListenable: Hive.box<VoiceModel>('voice').listenable(),
         builder: (BuildContext context, Box<VoiceModel> box, Widget? child) {
           if (box.values.isEmpty) {
             return Center(
