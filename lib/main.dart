@@ -8,6 +8,7 @@ import 'package:spell_of_victory/page/HomePage.dart';
 import 'package:spell_of_victory/page/RegisterPage.dart';
 import 'package:spell_of_victory/page/SettingPage.dart';
 import 'package:get/get.dart';
+import 'package:spell_of_victory/widgets/MainDrawer.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,8 +59,10 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
+          drawer: MainDrawer(),
           appBar: AppBar(
-            title: Text('TTS App'),
+            centerTitle: true,
+            title: Text('TTS App', textAlign: TextAlign.center,),
           ),
           body: _pages[_currentIndex],
           bottomNavigationBar: BottomNavigationBar(
