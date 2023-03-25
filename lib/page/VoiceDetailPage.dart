@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:spell_of_victory/model/HiveBoxes.dart';
 import 'package:spell_of_victory/model/VoiceModel.dart';
 import 'package:get/get.dart';
@@ -29,6 +30,8 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
 
   // TTS 관련
   late FlutterTts flutterTts;
+
+  bool isVoiceNameValidated = false;
 
   @override
   void initState() {
@@ -167,6 +170,24 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
     return items;
   }
 
+  // 이름 중복 및 유효성 검사
+  String? _validateVoiceName(String? value) {
+    if (value == null || value.isEmpty) {
+      isVoiceNameValidated = false;
+      return '이름 입력 필수';
+    }
+
+    // VoiceModel Box에서 같은 이름의 voiceName이 있는지 체크
+    if (Hive.box<VoiceModel>('voice').values
+        .any((model) => model.voiceName == value)) {
+      isVoiceNameValidated = false;
+      return '이름 중복';
+    }
+
+    isVoiceNameValidated = true;
+    return null; // 유효성 검사 통과
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -213,6 +234,11 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
                   _voiceName = value;
                 });
               },
+              validator: _validateVoiceName,
+              decoration: InputDecoration(
+                labelText: 'Voice Name',
+                errorText: _validateVoiceName(_voiceName), // validator에서 반환한 에러 메시지를 표시
+              ),
             ),
             SizedBox(height: 16),
             Text('TTS Engine', style: TextStyle(fontSize: 18)),
@@ -318,6 +344,8 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
       persistentFooterButtons: [
         ElevatedButton(
           onPressed: () {
+            if(!isVoiceNameValidated) return;
+
             VoiceModel voice = VoiceModel(voiceName: _voiceName, ttsEngine: _ttsEngine,
                 ttsLanguage: _ttsLanguage, ttsVoiceType: _ttsVoiceType, ttsVolume: _ttsVolume,
                 ttsPitch: _ttsPitch, ttsRate: _ttsRate, ttsLocale: _ttsLocale);
