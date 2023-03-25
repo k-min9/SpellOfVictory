@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:spell_of_victory/model/HiveBoxes.dart';
 
 class MainDrawer extends StatelessWidget {
 
@@ -36,15 +37,22 @@ class MainDrawer extends StatelessWidget {
             leading: Icon(Icons.refresh),
             title: Text('Hive 초기화'),
             onTap: () async {
-              await Hive.initFlutter();
+              // Box째 싹 초기화
+              // await Hive.deleteFromDisk();
+              // await HiveBoxes.init();
+              
+              // 내용물만 초기화
+              HiveBoxes.settings.clear();
+              HiveBoxes.voices.clear();
+              HiveBoxes.choices.clear();
+              HiveBoxes.categories.clear();
             },
           ),
           ListTile(
             leading: Icon(Icons.add),
             title: Text('초기값 추가'),
-            onTap: () {
-              final box = Hive.box('myBox');
-              box.put('key', 'value');
+            onTap: () async {
+              await HiveBoxes.setInitData();
             },
           ),
           ListTile(
