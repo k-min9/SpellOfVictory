@@ -174,14 +174,14 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
   String? _validateVoiceName(String? value) {
     if (value == null || value.isEmpty) {
       isVoiceNameValidated = false;
-      return '이름 입력 필수';
+      return '이름을 입력해주세요';
     }
 
     // VoiceModel Box에서 같은 이름의 voiceName이 있는지 체크
     if (Hive.box<VoiceModel>('voice').values
         .any((model) => model.voiceName == value)) {
       isVoiceNameValidated = false;
-      return '이름 중복';
+      return '같은 이름을 가진 음성이 있습니다';
     }
 
     isVoiceNameValidated = true;
@@ -236,7 +236,7 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
               },
               validator: _validateVoiceName,
               decoration: InputDecoration(
-                labelText: 'Voice Name',
+                labelText: '음성 이름을 정해주세요.',
                 errorText: _validateVoiceName(_voiceName), // validator에서 반환한 에러 메시지를 표시
               ),
             ),
