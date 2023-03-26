@@ -59,17 +59,23 @@ class CategoryTextModelAdapter extends TypeAdapter<CategoryTextModel> {
     return CategoryTextModel(
       content: fields[0] as String,
       isContentSelected: fields[1] as bool,
+      voiceName: fields[2] as String,
+      watingTime: fields[3] as double,
     );
   }
 
   @override
   void write(BinaryWriter writer, CategoryTextModel obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.content)
       ..writeByte(1)
-      ..write(obj.isContentSelected);
+      ..write(obj.isContentSelected)
+      ..writeByte(2)
+      ..write(obj.voiceName)
+      ..writeByte(3)
+      ..write(obj.watingTime);
   }
 
   @override

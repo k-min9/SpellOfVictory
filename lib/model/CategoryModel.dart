@@ -25,5 +25,11 @@ class CategoryTextModel extends HiveObject {
   @HiveField(1)
   bool isContentSelected;
 
-  CategoryTextModel({required this.content, required this.isContentSelected});
+  @HiveField(2)
+  String voiceName;
+
+  @HiveField(3)
+  double watingTime;
+
+  CategoryTextModel({required this.content, required this.isContentSelected, required this.voiceName, required this.watingTime});
 }
