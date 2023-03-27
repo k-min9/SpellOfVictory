@@ -25,7 +25,7 @@ class VoiceModel extends HiveObject {
   double ttsPitch = 1;
 
   @HiveField(6)
-  double ttsRate = 1;
+  double ttsRate = 0.5;
 
   @HiveField(7)
   String ttsLocale = 'ko';
