@@ -10,6 +10,8 @@ import 'package:spell_of_victory/model/CategoryModel.dart';
 import 'package:get/get.dart';
 import 'package:spell_of_victory/model/ChoiceModel.dart';
 import 'package:spell_of_victory/model/HiveBoxes.dart';
+import 'package:spell_of_victory/model/VoiceModel.dart';
+import 'package:spell_of_victory/widgets/CategoryInputDialog.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key? key}) : super(key: key);
@@ -21,8 +23,6 @@ class HomePage extends StatefulWidget {
 enum TtsState { playing, stopped, paused, continued }
 
 class _HomePageState extends State<HomePage> {
-  final TextEditingController _textEditingController = TextEditingController();
-
   // TTS 관련
   late FlutterTts flutterTts;
   TtsState ttsState = TtsState.stopped;
@@ -36,6 +36,9 @@ class _HomePageState extends State<HomePage> {
     cateNum = 0;
     textNum = 0;
     ttsPlayList = [];
+    ttsPlayIndex = 0;
+    ttsWaitingTime = 0;
+    _stop();
     final categoriesBox = Hive.box<CategoryModel>('categories');
     for (int i = 0; i < categoriesBox.length; i++) {
       final category = categoriesBox.getAt(i) as CategoryModel;
@@ -48,9 +51,39 @@ class _HomePageState extends State<HomePage> {
         }
       }
     }
-    ttsPlayIndex = 0;
-    ttsWaitingTime = 0;
-    _stop();
+  }
+
+  Future<void> _setTtsSettingByName(String name) async {
+    print(name);
+    // 해당 이름의 voice가 있다면 사용, 없으면 default
+    VoiceModel? voice;
+    try {
+      voice = HiveBoxes.voices.values.firstWhere((voice) => voice.voiceName == name);
+    } catch (e) {
+      voice = null;
+    }
+
+    if (voice != null) {
+      try {
+        await flutterTts.setEngine(voice.ttsEngine);
+        await flutterTts.setLanguage(voice.ttsLanguage);
+        await flutterTts.setVolume(voice.ttsVolume);
+        await flutterTts.setPitch(voice.ttsPitch);
+        await flutterTts.setSpeechRate(voice.ttsRate);
+      } catch (e) {
+        await flutterTts.setEngine("com.google.android.tts");
+        await flutterTts.setLanguage("'ko-KR'");
+        await flutterTts.setVolume(0.5);
+        await flutterTts.setPitch(1.0);
+        await flutterTts.setSpeechRate(0.5);
+      }
+    } else {
+      await flutterTts.setEngine("com.google.android.tts");
+      await flutterTts.setLanguage("'ko-KR'");
+      await flutterTts.setVolume(0.5);
+      await flutterTts.setPitch(1.0);
+      await flutterTts.setSpeechRate(0.5);
+    }
   }
 
   @override
@@ -109,13 +142,6 @@ class _HomePageState extends State<HomePage> {
         ttsState = TtsState.stopped;
       });
     });
-  }
-
-
-  @override
-  void dispose() {
-    _textEditingController.dispose();
-    super.dispose();
   }
 
   @override
@@ -353,30 +379,7 @@ class _HomePageState extends State<HomePage> {
           showDialog(
             context: context,
             builder: (context) {
-              return AlertDialog(
-                title: Text("새로운 주문"),
-                content: TextField(
-                  controller: _textEditingController,
-                  decoration: InputDecoration(
-                    hintText: '선택지 이름을 적어주세요.',
-                    contentPadding: EdgeInsets.all(10),
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      final newCategory = CategoryModel(name: _textEditingController.text, texts: [], isSelected: false);
-                      HiveBoxes.categories.add(newCategory);
-                      Navigator.pop(context);
-                    },
-                    child: Text('OK'),
-                  ),
-                ],
-              );
+              return CategoryInputDialog();
             },
           );
         },
@@ -445,15 +448,16 @@ class _HomePageState extends State<HomePage> {
       _stop();
     } else {
       _showSimpleToast(cateNum.toString() + "개의 주문서를 재생하겠습니다.");
+      _speak();
     }
-    _speak();
   }
 
   Future _speak() async {
     if (ttsWaitingTime != 0) await Future.delayed(Duration(milliseconds: (1000*ttsWaitingTime).toInt()));
     if (ttsPlayList.length <= ttsPlayIndex) ttsPlayIndex = 0;
-    // TODO: TTS 세부속성 세팅
+    await _setTtsSettingByName(ttsPlayList[ttsPlayIndex].voiceName);  // TTS 속성 설정
     var result = await flutterTts.speak(ttsPlayList[ttsPlayIndex].content);
+    ttsWaitingTime = ttsPlayList[ttsPlayIndex].watingTime;
   }
 
   // Future _setAwaitOptions() async {
@@ -463,7 +467,8 @@ class _HomePageState extends State<HomePage> {
   Future _stop() async {
     var result = await flutterTts.stop();
     if (result == 1) setState(() => ttsState = TtsState.stopped);
-    _showSimpleToast("주문서 재생을 중지");
+    ttsWaitingTime = 0;
+    if(ttsPlayList.length != 0) _showSimpleToast("주문서 재생을 중지");
   }
 
   Future _pause() async {
@@ -578,7 +583,7 @@ class _HomePageState extends State<HomePage> {
                                     onPressed: () {
                                       final box = Hive.box<CategoryModel>('categories');
                                       CategoryModel category = box.getAt(idx)!;
-                                      category.texts.add(CategoryTextModel(content:texts[index].content, isContentSelected: false));
+                                      category.texts.add(CategoryTextModel(content:texts[index].content, isContentSelected: false, voiceName: 'NA', watingTime: 0));
                                       box.putAt(idx, category);
 
                                       // add 추가 toast
