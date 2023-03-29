@@ -32,6 +32,10 @@ class _HomePageState extends State<HomePage> {
   int cateNum = 0;  // 등록된 카테고리 숫자
   int textNum = 0;  // 등록된 주문 수
 
+  // 삭제
+  List<int> checkedList = [];
+  bool isCheckable = false;
+
   void _setTtsPlayList() {
     cateNum = 0;
     textNum = 0;
@@ -188,7 +192,8 @@ class _HomePageState extends State<HomePage> {
                         final CategoryModel category =
                         categoriesBox.getAt(index) as CategoryModel;
                         return ExpansionTile(
-                          leading: IconButton(
+                          leading: !isCheckable?
+                          IconButton(
                             icon: Icon(
                               Icons.menu_book,
                               color: category.isSelected ? Colors.blue : Colors.grey,
@@ -201,47 +206,90 @@ class _HomePageState extends State<HomePage> {
                                 else if (!category.isSelected) _showSimpleToast("재생목록에서 제거되었습니다.");
                               });
                             },
-                          ),
-                          // trailing: ReorderableDragStartListener(
-                          //   index: index,
-                          //   child: Icon(Icons.drag_handle),
-                          // ),
-                          key: ValueKey(index),
-                          title: Row(
+                          )
+                          :
+                          Wrap(
+                            // spacing: -3,
                             children: [
-                              Expanded(child: Text(
-                                  category.name + " (" + category.texts.length.toString() + ")",
-                                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))
+                              Checkbox(
+                                value: checkedList.contains(index),
+                                onChanged: (_) {
+                                  setState(() {
+                                    if (checkedList.contains(index)) {
+                                      checkedList.remove(index);
+                                      // 선택된 것이 없으면 자동으로 초기화
+                                      if (checkedList.isEmpty) isCheckable = !isCheckable;
+                                    } else {
+                                      checkedList.add(index);
+                                    }
+                                  });
+                                },
                               ),
-                              ReorderableDragStartListener(
-                                index: index,
-                                child: Icon(Icons.drag_handle),
-                              ),
-                              SizedBox(width: 3),
                               IconButton(
-                                  onPressed: () {
-                                    _showModal(context, index);
-                                  }, icon: Icon(Icons.add), splashRadius: 18),
-                              SizedBox(width: 3),
-                              IconButton(
-                                  onPressed: () {
-                                    // 카테고리 삭제
-                                    CoolAlert.show(
-                                        context: context,
-                                        type: CoolAlertType.confirm,
-                                        title: '삭제 확인',
-                                        text: '정말 삭제하시겠습니까?',
-                                        confirmBtnText: '확인',
-                                        cancelBtnText: '취소',
-                                        showCancelBtn: true,
-                                        reverseBtnOrder: true,
-                                        onConfirmBtnTap: () async {
-                                          await categoriesBox.deleteAt(index);
-                                          _showSimpleToast("삭제되었습니다");
-                                        }
-                                    );
-                                  }, icon: Icon(Icons.delete), splashRadius: 18)
+                                icon: Icon(
+                                  Icons.menu_book,
+                                  color: category.isSelected ? Colors.blue : Colors.grey,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    category.isSelected = !category.isSelected;
+                                    categoriesBox.putAt(index, category);
+                                    if (category.isSelected) _showSimpleToast("재생목록에 추가되었습니다.");
+                                    else if (!category.isSelected) _showSimpleToast("재생목록에서 제거되었습니다.");
+                                  });
+                                },
+                              )
                             ],
+                          )
+                          ,
+                          trailing: isCheckable?
+                          ReorderableDragStartListener(
+                            index: index,
+                            child: Icon(Icons.drag_handle),
+                          ):null,
+                          key: ValueKey(index),
+                          title: GestureDetector(
+                            onLongPress: () {
+                              checkedList = [];
+                              checkedList.add(index);
+
+                              setState(() {
+                                isCheckable = !isCheckable;
+                              });
+                            },
+                            onTap: () {
+                              if(isCheckable) {
+                                setState(() {
+                                  if (checkedList.contains(index)) {
+                                    checkedList.remove(index);
+                                    // 선택된 것이 없으면 자동으로 초기화
+                                    if (checkedList.isEmpty) isCheckable = !isCheckable;
+                                  } else {
+                                    checkedList.add(index);
+                                  }
+                                });
+                              }
+                            },
+                            child: Text(
+                                category.name + " (" + category.texts.length.toString() + ")",
+                                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))
+                            // Row(
+                            //   children: [
+                            //     Expanded(child: Text(
+                            //         category.name + " (" + category.texts.length.toString() + ")",
+                            //         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))
+                            //     ),
+                            //     ReorderableDragStartListener(
+                            //       index: index,
+                            //       child: Icon(Icons.drag_handle),
+                            //     ),
+                            //     SizedBox(width: 3),
+                            //     IconButton(
+                            //         onPressed: () {
+                            //           _showModal(context, index);
+                            //         }, icon: Icon(Icons.add), splashRadius: 18),
+                            //   ],
+                            // ),
                           ),
                           children: [
                             ReorderableListView(
@@ -304,12 +352,16 @@ class _HomePageState extends State<HomePage> {
                                 categoriesBox.putAt(index, newCategory);
                               },
                             ),
-                            // ListTile(
-                            //   title: Text('재생목록 세팅 확인'),
-                            //   onTap: () {
-                            //     setTtsPlayList();
-                            //   },
-                            // ),
+                            ListTile(
+                              title: Center(child:Text('주문 추가')),
+                              // tileColor: Colors.yellowAccent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30.0),
+                              ),
+                              onTap: () {
+                                _showModal(context, index);
+                              },
+                            ),
                             Divider(
                               height: 1,
                               thickness: 1,
@@ -324,57 +376,13 @@ class _HomePageState extends State<HomePage> {
               ),
               SizedBox(height: 10),
               _btnSection(),
-              SizedBox(height: 10),
-              // GestureDetector(
-              //   onTap: () {
-              //     showDialog(
-              //       context: context,
-              //       builder: (context) {
-              //         return AlertDialog(
-              //           title: Text("새로운 선택지"),
-              //           content: TextField(
-              //             controller: _textEditingController,
-              //             decoration: InputDecoration(
-              //               hintText: '선택지 이름을 적어주세요.',
-              //               contentPadding: EdgeInsets.all(10),
-              //             ),
-              //           ),
-              //           actions: [
-              //             TextButton(
-              //               onPressed: () => Navigator.pop(context),
-              //               child: Text('Cancel'),
-              //             ),
-              //             TextButton(
-              //               onPressed: () {
-              //                 final newCategory = CategoryModel(name: _textEditingController.text, texts: [], isSelected: false);
-              //                 HiveBoxes.categories.add(newCategory);
-              //                 Navigator.pop(context);
-              //               },
-              //               child: Text('OK'),
-              //             ),
-              //           ],
-              //         );
-              //       },
-              //     );
-              //   },
-              //   child: Container(
-              //     padding: EdgeInsets.all(10),
-              //     decoration: BoxDecoration(
-              //       borderRadius: BorderRadius.circular(10),
-              //       color: Colors.grey[200],
-              //     ),
-              //     child: Text(
-              //       '새로운 카테고리',
-              //       style: TextStyle(fontSize: 16),
-              //     ),
-              //   ),
-              // ),
-              SizedBox(height: 10),
+              SizedBox(height: 15),
             ],
           )
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: !isCheckable?
+      FloatingActionButton(
         onPressed: () {
           showDialog(
             context: context,
@@ -384,6 +392,13 @@ class _HomePageState extends State<HomePage> {
           );
         },
         child: Icon(Icons.add),
+      ):
+      FloatingActionButton(
+        onPressed: () {
+          _deleteSelectedItems();
+        },
+        child: Icon(Icons.delete),
+        backgroundColor: Colors.redAccent,
       ),
     );
   }
@@ -530,13 +545,15 @@ class _HomePageState extends State<HomePage> {
             navigationBar: CupertinoNavigationBar(
                 leading: Container(), middle: Text('Modal Page')),
             child: SafeArea(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (final choice in HiveBoxes.choices.values)
-                    _buildChoiceTitleModal(context, choice.name, choice.texts, idx),
-                ],
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final choice in HiveBoxes.choices.values)
+                      _buildChoiceTitleModal(context, choice.name, choice.texts, idx),
+                  ],
+                )
               ),
             )
         );
@@ -570,35 +587,39 @@ class _HomePageState extends State<HomePage> {
             navigationBar: CupertinoNavigationBar(
                 leading: Container(), middle: Text('Modal Page')),
             child: SafeArea(
-                child: Column(
-                    children: [ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: texts.length,
-                      itemBuilder: (context, index) {
-                        return Column(
-                          children: [
-                            ListTile(
-                                title: Text(texts[index].content),
-                                trailing: IconButton(
-                                    onPressed: () {
-                                      final box = Hive.box<CategoryModel>('categories');
-                                      CategoryModel category = box.getAt(idx)!;
-                                      category.texts.add(CategoryTextModel(content:texts[index].content, isContentSelected: false, voiceName: 'NA', watingTime: 0));
-                                      box.putAt(idx, category);
+                child: SingleChildScrollView(
+                  child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: texts.length,
+                        itemBuilder: (context, index) {
+                          return Column(
+                            children: [
+                              ListTile(
+                                  title: Text(texts[index].content),
+                                  trailing: IconButton(
+                                      onPressed: () {
+                                        final box = Hive.box<CategoryModel>('categories');
+                                        CategoryModel category = box.getAt(idx)!;
+                                        category.texts.add(CategoryTextModel(content:texts[index].content, isContentSelected: false, voiceName: 'NA', watingTime: 0));
+                                        box.putAt(idx, category);
 
-                                      // add 추가 toast
-                                      _showSimpleToast("주문을 추가하였습니다.");
-                                    },
-                                    icon: Icon(Icons.add),
-                                    splashRadius: 18
-                                )
-                            ),
-                            Divider(height: 2, thickness: 1.4),
-                          ],
-                        );
-                      },
-                    ),
-                    ]
+                                        // add 추가 toast
+                                        _showSimpleToast("주문을 추가하였습니다.");
+                                      },
+                                      icon: Icon(Icons.add),
+                                      splashRadius: 18
+                                  )
+                              ),
+                              Divider(height: 2, thickness: 1.4),
+                            ],
+                          );
+                        },
+                      ),
+                      ]
+                  )
                 )
             )
         )
@@ -649,5 +670,30 @@ class _HomePageState extends State<HomePage> {
 
   void _handleItemClick(String title, String content) {
     print('Clicked: $title - $content');
+  }
+
+  void _deleteSelectedItems() {
+    CoolAlert.show(
+        context: context,
+        type: CoolAlertType.confirm,
+        title: '삭제 확인',
+        text: '${checkedList.length}개의 주문서를 삭제하시겠습니까?',
+        confirmBtnText: '확인',
+        cancelBtnText: '취소',
+        showCancelBtn: true,
+        reverseBtnOrder: true,
+        onConfirmBtnTap: () async {
+          List<int> sortedIndexes = checkedList.toList()..sort();
+          for (int i = sortedIndexes.length - 1; i >= 0; i--) {
+            int index = sortedIndexes[i];
+            await HiveBoxes.categories.deleteAt(index);
+          }
+
+          // 삭제 후 상태 초기화
+          isCheckable = false;
+          checkedList = [];
+          _showSimpleToast("삭제되었습니다");
+        }
+    );
   }
 }
