@@ -20,6 +20,11 @@ void main() async {
   // FlutterTTS 인스턴스 생성 후 초기화 및 등록
   final FlutterTts flutterTts = FlutterTts();
   Get.put(flutterTts);
+  ///TODO : 가능한 엔진 미리 init하여 Preloading
+  final engines = await flutterTts.getEngines;
+  for (dynamic engine in engines) {
+    await flutterTts.setEngine(engine!);
+  }
 
   // SettingController 등록
   Get.put(SettingController());
@@ -74,12 +79,12 @@ class _MyAppState extends State<MyApp> {
             },
             items: [
               BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: 'Home',
+                icon: Icon(Icons.menu_book),
+                label: 'Spells',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.add),
-                label: 'Register',
+                label: 'Content',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.volume_up),
