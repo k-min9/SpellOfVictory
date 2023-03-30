@@ -188,6 +188,32 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
     return null; // 유효성 검사 통과
   }
 
+  // 음성 높낮이 안내 메시지
+  String getVoicePitchText(double _pitch) {
+    if (_pitch < 0.8) {
+      return '낮음';
+    } else if (_pitch <= 1.2) {
+      return '보통';
+    } else {
+      return '높음';
+    }
+  }
+
+  // 음성 속도 안내 메시지
+  String getVoiceRateText(double _rate) {
+    if (_rate <= 0.3) {
+      return '매우 느림';
+    } else if (_rate < 0.45) {
+      return '느림';
+    } else if (_rate <= 0.55) {
+      return '보통';
+    } else if (_rate < 0.7) {
+      return '빠름';
+    } else {
+      return '매우 빠름';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -292,7 +318,7 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
             //   },
             // ),
             SizedBox(height: 16),
-            Text('Voice Volume : ${_ttsVolume.toStringAsFixed(1)}', style: TextStyle(fontSize: 18)),
+            Text('음성 볼륨 : ${_ttsVolume.toStringAsFixed(1)}', style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
             Slider(
               value: _ttsVolume,
@@ -308,7 +334,7 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
               },
             ),
             SizedBox(height: 16),
-            Text('Voice Pitch : ${_ttsPitch.toStringAsFixed(1)}', style: TextStyle(fontSize: 18)),
+            Text('음성 높낮이 : ${getVoicePitchText(_ttsPitch)}', style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
             Slider(
               value: _ttsPitch,
@@ -323,14 +349,14 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
               },
             ),
             SizedBox(height: 16),
-            Text('Voice Rate : ${_ttsRate.toStringAsFixed(1)}', style: TextStyle(fontSize: 18)),
+            Text('음성 속도 : ${getVoiceRateText(_ttsRate)}', style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
             Slider(
               value: _ttsRate,
-              min: 0.0,
-              max: 1.0,
-              divisions: 10,
-              label: 'Rate: ${_ttsRate.toStringAsFixed(1)}',
+              min: 0.2,
+              max: 0.8,
+              divisions: 12,
+              label: 'Rate: ${_ttsRate.toStringAsFixed(2)}',
               activeColor: Colors.green,
               onChanged: (value) {
                 setState(() {
