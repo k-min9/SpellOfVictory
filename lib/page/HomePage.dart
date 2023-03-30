@@ -353,14 +353,24 @@ class _HomePageState extends State<HomePage> {
                               },
                             ),
                             ListTile(
-                              title: Center(child:Text('주문 추가')),
-                              // tileColor: Colors.yellowAccent,
+                              title: Center(
+                                  child: GestureDetector(
+                                    child: Container(
+                                      padding: EdgeInsets.all(10),
+                                      child: Text('주문 추가'),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Colors.grey[200],
+                                      ),
+                                    ),
+                                    onTap: () {
+                                      _showModal(context, index);
+                                    },
+                                  )
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30.0),
                               ),
-                              onTap: () {
-                                _showModal(context, index);
-                              },
                             ),
                             Divider(
                               height: 1,
