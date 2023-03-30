@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:spell_of_victory/controller/SettingController.dart';
 import 'package:spell_of_victory/model/HiveBoxes.dart';
@@ -59,6 +60,31 @@ class _MyAppState extends State<MyApp> {
   int _currentIndex = 0;
   List<Widget> _pages = [HomePage(), RegisterPage(), SettingPage()];
 
+  // 두번 누르면 아웃
+  DateTime? currentBackPressTime;
+
+  Future<bool> _onWillPop() async {
+    print('?');
+    final DateTime now = DateTime.now();
+    if (currentBackPressTime == null ||
+        now.difference(currentBackPressTime!) > Duration(seconds: 2))
+    {
+      currentBackPressTime = now;
+      Fluttertoast.cancel();
+      Fluttertoast.showToast(
+          msg: '한 번 더 뒤로가기를 누르시면 종료됩니다.',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0
+      );
+      return Future.value(false);
+    }
+    return Future.value(true);
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -69,7 +95,10 @@ class _MyAppState extends State<MyApp> {
             centerTitle: true,
             title: Text('TTS App', textAlign: TextAlign.center,),
           ),
-          body: _pages[_currentIndex],
+          body: WillPopScope(
+            onWillPop: _onWillPop,
+            child: _pages[_currentIndex]
+          ),
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: _currentIndex,
             onTap: (index) {
