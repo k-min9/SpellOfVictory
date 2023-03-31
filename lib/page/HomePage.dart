@@ -4,8 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:spell_of_victory/controller/SettingController.dart';
 import 'package:spell_of_victory/model/CategoryModel.dart';
 import 'package:get/get.dart';
 import 'package:spell_of_victory/model/ChoiceModel.dart';
@@ -23,6 +25,53 @@ class HomePage extends StatefulWidget {
 enum TtsState { playing, stopped, paused, continued }
 
 class _HomePageState extends State<HomePage> {
+  // 기본 변수
+  SettingController settingController = Get.find<SettingController>();
+
+  // 광고 관련
+  InterstitialAd? myInterstitialAd;
+  bool isMyInterstitialAdReady = false;
+  Future<void> loadInterstitial() async {
+    InterstitialAd.load(
+      adUnitId: "ca-app-pub-8480822096988962/8207285125",
+      request: AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (InterstitialAd ad) {
+          myInterstitialAd = ad;
+          isMyInterstitialAdReady = true;
+        },
+        onAdFailedToLoad: (LoadAdError error) {
+          // nothing to do
+        },
+      ),
+    );
+  }
+
+  final BannerAd myBanner = BannerAd(
+      adUnitId: 'ca-app-pub-8480822096988962/9822153113',
+      // adUnitId: 'ca-app-pub-3940256099942544/6300978111',  // for test
+      size: AdSize.fullBanner,
+      request: AdRequest(),
+      listener: BannerAdListener(
+        // Called when an ad is successfully received.
+        onAdLoaded: (Ad ad) => print('Ad loaded.'),
+        // Called when an ad request failed.
+        onAdFailedToLoad: (Ad ad, LoadAdError error) {
+          // Dispose the ad here to free resources.
+          ad.dispose();
+          print('Ad failed to load: $error');
+        },
+        // Called when an ad opens an overlay that covers the screen.
+        onAdOpened: (Ad ad) => print('Ad opened.'),
+        // Called when an ad removes an overlay that covers the screen.
+        onAdClosed: (Ad ad) => print('Ad closed.'),
+        // Called when an impression occurs on the ad.
+        onAdImpression: (Ad ad) => print('Ad impression.'),
+      )
+  )..load();
+
+
+
   // TTS 관련
   late FlutterTts flutterTts;
   TtsState ttsState = TtsState.stopped;
@@ -386,6 +435,14 @@ class _HomePageState extends State<HomePage> {
               ),
               SizedBox(height: 10),
               _btnSection(),
+              SizedBox(height: 5),
+              Container(
+                alignment: Alignment.center,
+                child: AdWidget(ad: myBanner),
+                color: Colors.red,
+                width: myBanner.size.width.toDouble(),
+                height: myBanner.size.height.toDouble(),
+              ),
               SizedBox(height: 15),
             ],
           )
@@ -472,6 +529,17 @@ class _HomePageState extends State<HomePage> {
       _showSimpleToast("등록된 주문서가 없습니다.");
       _stop();
     } else {
+      // 시작 시간
+      settingController.startTime = DateTime.now();
+
+      // 전면 광고 로딩
+      if (myInterstitialAd != null) {
+        myInterstitialAd!.dispose();
+        isMyInterstitialAdReady = false;
+      }
+      loadInterstitial();
+      
+      // 안내 및 시작
       _showSimpleToast(cateNum.toString() + "개의 주문서를 재생하겠습니다.");
       _speak();
     }
@@ -494,6 +562,16 @@ class _HomePageState extends State<HomePage> {
     if (result == 1) setState(() => ttsState = TtsState.stopped);
     ttsWaitingTime = 0;
     if(ttsPlayList.length != 0) _showSimpleToast("주문서 재생을 중지");
+
+    // 전면광고 발동 (120초 넘어가면 발동)
+    if (DateTime.now().difference(settingController.startTime).inSeconds > 60) {
+      // 중지 등에 의한 알람 광고일 경우, 그냥 넘어가자
+      if (isMyInterstitialAdReady == true) {
+        myInterstitialAd!.show();
+        myInterstitialAd!.dispose();
+        isMyInterstitialAdReady = false;
+      }
+    }
   }
 
   Future _pause() async {

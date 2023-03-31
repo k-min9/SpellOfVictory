@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:spell_of_victory/controller/SettingController.dart';
 import 'package:spell_of_victory/model/HiveBoxes.dart';
@@ -45,6 +46,9 @@ void main() async {
       ),
     );
   }
+
+  // Ads
+  MobileAds.instance.initialize();
 
   runApp(const MyApp());
 }
