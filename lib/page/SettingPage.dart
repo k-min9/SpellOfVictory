@@ -109,18 +109,24 @@ class _SettingPageState extends State<SettingPage> {
           },
           child: Icon(Icons.add),
         ):
-        null,
+        FloatingActionButton(
+          onPressed: () {
+            _deleteSelectedItems();
+          },
+          child: Icon(Icons.delete),
+          backgroundColor: Colors.redAccent,
+        ),
         // 삭제 버튼 추가
-        persistentFooterButtons: isCheckable?
-        [
-          ElevatedButton(
-            onPressed: () {
-              _deleteSelectedItems();
-            },
-            child: Text('삭제'),
-          ),
-        ]:
-        null
+        // persistentFooterButtons: isCheckable?
+        // [
+        //   ElevatedButton(
+        //     onPressed: () {
+        //       _deleteSelectedItems();
+        //     },
+        //     child: Text('삭제'),
+        //   ),
+        // ]:
+        // null
     );
   }
 
