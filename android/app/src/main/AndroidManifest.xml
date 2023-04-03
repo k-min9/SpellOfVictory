@@ -4,6 +4,14 @@
         android:label="승리의 주문"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+
+       <!--AD MOB-->
+       <meta-data
+           android:name="com.google.android.gms.ads.APPLICATION_ID"
+           android:value="ca-app-pub-8480822096988962~6755540060"/>
+       <!--       android:value="ca-app-pub-8480822096988962~6755540060"/> REAL-->
+       <!--       android:value="ca-app-pub-3940256099942544~6300978111"/> TEST-->
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
