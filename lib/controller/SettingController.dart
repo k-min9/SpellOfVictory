@@ -7,6 +7,10 @@ class SettingController extends GetxController {
   late Box<SettingModel> _settingsBox;
   final FlutterTts _flutterTts = Get.find<FlutterTts>();
 
+  DateTime _startTime = DateTime.now();
+  DateTime get startTime => _startTime;
+  set startTime(DateTime newStartTime) => _startTime = newStartTime;
+
 
   @override
   void onInit() {
