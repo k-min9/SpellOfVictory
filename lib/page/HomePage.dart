@@ -210,7 +210,7 @@ class _HomePageState extends State<HomePage> {
                   builder: (context, Box<CategoryModel> categoriesBox, _) {
                     if (categoriesBox.values.isEmpty) {
                       return Center(
-                        child: Text('등록한 주문이 없습니다.'),
+                        child: Text('등록한 주문서가 없습니다.'),
                       );
                     }
                     return ReorderableListView.builder(
@@ -241,54 +241,63 @@ class _HomePageState extends State<HomePage> {
                         final CategoryModel category =
                         categoriesBox.getAt(index) as CategoryModel;
                         return ExpansionTile(
-                          leading: !isCheckable?
-                          IconButton(
-                            icon: Icon(
-                              Icons.menu_book,
-                              color: category.isSelected ? Colors.blue : Colors.grey,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                category.isSelected = !category.isSelected;
-                                categoriesBox.putAt(index, category);
-                                if (category.isSelected) _showSimpleToast("재생목록에 추가되었습니다.");
-                                else if (!category.isSelected) _showSimpleToast("재생목록에서 제거되었습니다.");
-                              });
+                          leading: AnimatedSwitcher(
+                            duration: Duration(milliseconds: 300),
+                            transitionBuilder: (child, animation) {
+                              return ScaleTransition(
+                                scale: animation,
+                                child: child,
+                              );
                             },
-                          )
-                          :
-                          Wrap(
-                            // spacing: -3,
-                            children: [
-                              Checkbox(
-                                value: checkedList.contains(index),
-                                onChanged: (_) {
-                                  setState(() {
-                                    if (checkedList.contains(index)) {
-                                      checkedList.remove(index);
-                                      // 선택된 것이 없으면 자동으로 초기화
-                                      if (checkedList.isEmpty) isCheckable = !isCheckable;
-                                    } else {
-                                      checkedList.add(index);
-                                    }
-                                  });
-                                },
+                            child: !isCheckable?
+                            IconButton(
+                              icon: Icon(
+                                Icons.menu_book,
+                                color: category.isSelected ? Colors.blue : Colors.grey,
                               ),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.menu_book,
-                                  color: category.isSelected ? Colors.blue : Colors.grey,
+                              onPressed: () {
+                                setState(() {
+                                  category.isSelected = !category.isSelected;
+                                  categoriesBox.putAt(index, category);
+                                  if (category.isSelected) _showSimpleToast("재생목록에 추가되었습니다.");
+                                  else if (!category.isSelected) _showSimpleToast("재생목록에서 제거되었습니다.");
+                                });
+                              },
+                            )
+                                :
+                            Wrap(
+                              // spacing: -3,
+                              children: [
+                                Checkbox(
+                                  value: checkedList.contains(index),
+                                  onChanged: (_) {
+                                    setState(() {
+                                      if (checkedList.contains(index)) {
+                                        checkedList.remove(index);
+                                        // 선택된 것이 없으면 자동으로 초기화
+                                        if (checkedList.isEmpty) isCheckable = !isCheckable;
+                                      } else {
+                                        checkedList.add(index);
+                                      }
+                                    });
+                                  },
                                 ),
-                                onPressed: () {
-                                  setState(() {
-                                    category.isSelected = !category.isSelected;
-                                    categoriesBox.putAt(index, category);
-                                    if (category.isSelected) _showSimpleToast("재생목록에 추가되었습니다.");
-                                    else if (!category.isSelected) _showSimpleToast("재생목록에서 제거되었습니다.");
-                                  });
-                                },
-                              )
-                            ],
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.menu_book,
+                                    color: category.isSelected ? Colors.blue : Colors.grey,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      category.isSelected = !category.isSelected;
+                                      categoriesBox.putAt(index, category);
+                                      if (category.isSelected) _showSimpleToast("재생목록에 추가되었습니다.");
+                                      else if (!category.isSelected) _showSimpleToast("재생목록에서 제거되었습니다.");
+                                    });
+                                  },
+                                )
+                              ],
+                            )
                           )
                           ,
                           trailing: isCheckable?
@@ -321,24 +330,8 @@ class _HomePageState extends State<HomePage> {
                             },
                             child: Text(
                                 category.name + " (" + category.texts.length.toString() + ")",
-                                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))
-                            // Row(
-                            //   children: [
-                            //     Expanded(child: Text(
-                            //         category.name + " (" + category.texts.length.toString() + ")",
-                            //         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))
-                            //     ),
-                            //     ReorderableDragStartListener(
-                            //       index: index,
-                            //       child: Icon(Icons.drag_handle),
-                            //     ),
-                            //     SizedBox(width: 3),
-                            //     IconButton(
-                            //         onPressed: () {
-                            //           _showModal(context, index);
-                            //         }, icon: Icon(Icons.add), splashRadius: 18),
-                            //   ],
-                            // ),
+                                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
+                            )
                           ),
                           children: [
                             ReorderableListView(
@@ -439,7 +432,6 @@ class _HomePageState extends State<HomePage> {
               Container(
                 alignment: Alignment.center,
                 child: AdWidget(ad: myBanner),
-                color: Colors.red,
                 width: myBanner.size.width.toDouble(),
                 height: myBanner.size.height.toDouble(),
               ),
