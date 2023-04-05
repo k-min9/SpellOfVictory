@@ -3,6 +3,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:spell_of_victory/controller/EarphoneController.dart';
 import 'package:spell_of_victory/controller/SettingController.dart';
 import 'package:spell_of_victory/model/HiveBoxes.dart';
 import 'package:spell_of_victory/model/SettingModel.dart';
@@ -30,6 +31,11 @@ void main() async {
 
   // SettingController 등록
   Get.put(SettingController());
+
+  // EarphoneController 등록
+  // final EarphoneController earphoneController = Get.put(EarphoneController());
+  // earphoneController.checkEarphoneConnection();
+  // earphoneController.registerEarphoneConnectivity();
 
   // 기본 데이터 세팅 없으면 세팅
   if (Hive.box<SettingModel>('settings').isEmpty) {
