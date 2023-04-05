@@ -5,6 +5,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:spell_of_victory/controller/EarphoneController.dart';
 import 'package:spell_of_victory/controller/SettingController.dart';
+import 'package:spell_of_victory/controller/TutorialController.dart';
 import 'package:spell_of_victory/model/HiveBoxes.dart';
 import 'package:spell_of_victory/model/SettingModel.dart';
 import 'package:spell_of_victory/page/HomePage.dart';
@@ -36,6 +37,9 @@ void main() async {
   // final EarphoneController earphoneController = Get.put(EarphoneController());
   // earphoneController.checkEarphoneConnection();
   // earphoneController.registerEarphoneConnectivity();
+
+  // TutorialController 등록
+  Get.put(TutorialController());
 
   // 기본 데이터 세팅 없으면 세팅
   if (Hive.box<SettingModel>('settings').isEmpty) {
