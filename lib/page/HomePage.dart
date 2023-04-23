@@ -8,6 +8,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:spell_of_victory/controller/SettingController.dart';
+import 'package:spell_of_victory/controller/TutorialController.dart';
 import 'package:spell_of_victory/model/CategoryModel.dart';
 import 'package:get/get.dart';
 import 'package:spell_of_victory/model/ChoiceModel.dart';
@@ -27,6 +28,7 @@ enum TtsState { playing, stopped, paused, continued }
 class _HomePageState extends State<HomePage> {
   // 기본 변수
   SettingController settingController = Get.find<SettingController>();
+  TutorialController tutorialController = Get.find<TutorialController>();
 
   // 광고 관련
   InterstitialAd? myInterstitialAd;
@@ -251,6 +253,7 @@ class _HomePageState extends State<HomePage> {
                             },
                             child: !isCheckable?
                             IconButton(
+                              key: (index==0) ? tutorialController.tutorialKey3 : UniqueKey(),
                               icon: Icon(
                                 Icons.menu_book,
                                 color: category.isSelected ? Colors.blue : Colors.grey,
@@ -442,6 +445,7 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: !isCheckable?
       FloatingActionButton(
+        key: tutorialController.tutorialKey2,
         onPressed: () {
           showDialog(
             context: context,
@@ -453,6 +457,7 @@ class _HomePageState extends State<HomePage> {
         child: Icon(Icons.add),
       ):
       FloatingActionButton(
+        key: tutorialController.tutorialKey2,
         onPressed: () {
           _deleteSelectedItems();
         },
@@ -479,6 +484,7 @@ class _HomePageState extends State<HomePage> {
   // 재생기(임시)
   Widget _btnSection() {
     return Container(
+      key: tutorialController.tutorialKey1,
       padding: EdgeInsets.only(top: 50.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
