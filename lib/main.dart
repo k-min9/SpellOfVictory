@@ -104,7 +104,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
-          drawer: MainDrawer(),
+          drawer: MainDrawer(setPage: setPage),
           appBar: AppBar(
             centerTitle: true,
             title: Text('TTS App', textAlign: TextAlign.center,),
@@ -137,5 +137,12 @@ class _MyAppState extends State<MyApp> {
           ),
         )
     );
+  }
+  
+  // Tutorial용 페이지 전환
+  void setPage(int pageIndex) {
+    setState(() {
+      _currentIndex = pageIndex;
+    });
   }
 }
