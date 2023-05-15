@@ -31,7 +31,9 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
   // TTS 관련
   late FlutterTts flutterTts;
 
+  // 정합성 체크
   bool isVoiceNameValidated = false;
+  late String initialName = '';
 
   @override
   void initState() {
@@ -49,6 +51,8 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
     if (_ttsLocale == null || _ttsLocale.isEmpty) {
       _ttsLocale = window.locale.languageCode;
     }
+
+    initialName = _voiceName;
   }
 
   // TTS 관련 리스트
@@ -179,7 +183,7 @@ class _VoiceDetailPageState extends State<VoiceDetailPage> {
 
     // VoiceModel Box에서 같은 이름의 voiceName이 있는지 체크
     if (Hive.box<VoiceModel>('voice').values
-        .any((model) => model.voiceName == value)) {
+        .any((model) => model.voiceName == value && initialName != value)) {
       isVoiceNameValidated = false;
       return '같은 이름을 가진 음성이 있습니다';
     }
