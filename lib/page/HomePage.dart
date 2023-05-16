@@ -669,48 +669,48 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildChoiceTextModal(BuildContext context, List<ChoiceTextModel> texts, int idx) {
     return Material(
-        child: CupertinoPageScaffold(
-            navigationBar: CupertinoNavigationBar(
-                leading: Container(), middle: Text('Modal Page')),
-            child: SafeArea(
-                child: SingleChildScrollView(
-                  child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: texts.length,
-                        itemBuilder: (context, index) {
-                          return Column(
-                            children: [
-                              ListTile(
-                                  title: Text(texts[index].content),
-                                  trailing: IconButton(
-                                      onPressed: () {
-                                        final box = Hive.box<CategoryModel>('categories');
-                                        CategoryModel category = box.getAt(idx)!;
-                                        category.texts.add(CategoryTextModel(content:texts[index].content, isContentSelected: false, voiceName: 'NA', watingTime: 0));
-                                        box.putAt(idx, category);
+      child: CupertinoPageScaffold(
+        navigationBar: CupertinoNavigationBar(
+          leading: Container(),
+          middle: Text('Modal Page'),
+        ),
+        child: SafeArea(
+          child: ListView.builder(
+            itemCount: texts.length,
+            itemBuilder: (context, index) {
+              return Column(
+                children: [
+                  ListTile(
+                    title: Text(texts[index].content),
+                    trailing: IconButton(
+                      onPressed: () {
+                        final box = Hive.box<CategoryModel>('categories');
+                        CategoryModel category = box.getAt(idx)!;
+                        category.texts.add(CategoryTextModel(
+                          content: texts[index].content,
+                          isContentSelected: false,
+                          voiceName: 'NA',
+                          watingTime: 0,
+                        ));
+                        box.putAt(idx, category);
 
-                                        // add 추가 toast
-                                        _showSimpleToast("주문을 추가하였습니다.");
-                                      },
-                                      icon: Icon(Icons.add),
-                                      splashRadius: 18
-                                  )
-                              ),
-                              Divider(height: 2, thickness: 1.4),
-                            ],
-                          );
-                        },
-                      ),
-                      ]
-                  )
-                )
-            )
-        )
+                        // add 추가 toast
+                        _showSimpleToast("주문을 추가하였습니다.");
+                      },
+                      icon: Icon(Icons.add),
+                      splashRadius: 18,
+                    ),
+                  ),
+                  Divider(height: 2, thickness: 1.4),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
     );
   }
+
 
   void _showSimpleToast(String msgText) {
     Fluttertoast.cancel();
