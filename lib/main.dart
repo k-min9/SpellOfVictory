@@ -26,14 +26,14 @@ void main() async {
   Get.put(flutterTts);
 
   ///TODO : 가능한 엔진 미리 init하여 Preloading
-  final engines = await flutterTts.getEngines;
-  try {
-    for (dynamic engine in engines) {
-      await flutterTts.setEngine(engine!);
-    }
-  } catch (e) {
-    flutterTts.setEngine('com.google.android.tts');
-  }
+  // final engines = await flutterTts.getEngines;
+  // try {
+  //   for (dynamic engine in engines) {
+  //     await flutterTts.setEngine(engine!);
+  //   }
+  // } catch (e) {
+  //   flutterTts.setEngine('com.google.android.tts');
+  // }
 
 
   // SettingController 등록
